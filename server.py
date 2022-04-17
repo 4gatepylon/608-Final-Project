@@ -12,38 +12,36 @@ def request_handler(request):
     conn = sqlite3.connect(new_db)
     c = conn.cursor()
     if request['method'] == 'POST':
-        x = request['form']['x']
-        y = request['form']['y']
-        c.execute("""CREATE TABLE IF NOT EXISTS accel_data (time_ timestamp, x real, y real);""")
-        c.execute('''INSERT into accel_data VALUES (?,?,?);''', (now, x, y))
+        a_x = request['form']['a_x']
+        a_y = request['form']['a_y']
+        v_x = request['form']['v_x']
+        v_y = request['form']['v_y']
+        x_x = request['form']['x_x']
+        x_y = request['form']['x_y']
+        c.execute("""CREATE TABLE IF NOT EXISTS data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real);""")
+        c.execute('''INSERT into data VALUES (?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y))
         conn.commit()
         conn.close()
-        return x, y
+        return "done"
     if request['method'] == 'GET':
 
-        data = c.execute('''SELECT * FROM accel_data ORDER BY time_ ASC;''').fetchall()
+        data = c.execute('''SELECT * FROM data ORDER BY time_ ASC;''').fetchall()
 
-        x = []
-        y = []
+        a_x_vals = []
+        a_y_vals = []
+        v_x_vals = []
+        v_y_vals = []
+        x_x_vals = []
+        x_y_vals = []
         times = []
 
-        for time_, x_val, y_val in data:
+        for time_, a_x, a_y, v_x, v_y, x_x, x_y in data:
             dto = datetime.datetime.strptime(time_,'%Y-%m-%d %H:%M:%S.%f')
             times.append(dto)
-            x.append(x_val)
-            y.append(y_val)
-
-        plot = figure( x_axis_type="datetime") #create a figure called p
-        plot.line(times, x, legend_label="x", line_color="orange") #add a line plot of x vs. y arrays
-        plot.line(times, y, legend_label="y", line_color="green") #add a line plot of x vs. y arrays
-        
-        script, div = components(plot)
-
-        return f'''<!DOCTYPE html>
-        <html> <script src="https://cdn.bokeh.org/bokeh/release/bokeh-2.4.0.min.js"></script>
-            <body>
-                {div}
-            </body>
-            {script}
-        </html>
-        '''
+            a_x_vals.append(a_x)
+            a_y_vals.append(a_x)
+            v_x_vals.append(a_x)
+            v_y_vals.append(a_x)
+            x_x_vals.append(a_x)
+            x_y_vals.append(a_x)
+        return {'times': times, 'a_x': a_x_vals, 'a_y': a_y_vals, 'v_x': v_x_vals, 'v_y': v_y_vals, 'x_x': x_x_vals, 'x_y': x_y_vals}
