@@ -12,10 +12,10 @@ def request_handler(request):
     conn = sqlite3.connect(new_db)
     c = conn.cursor()
     if request['method'] == 'POST':
-        x = request['x']
-        y = request['y']
+        x = request['form']['x']
+        y = request['form']['y']
         c.execute("""CREATE TABLE IF NOT EXISTS accel_data (time_ timestamp, x real, y real);""")
-        c.execute('''INSERT into sensor_data VALUES (?,?,?, ?);''', ( datetime.datetime.now(), x, y))
+        c.execute('''INSERT into accel_data VALUES (?,?,?);''', (now, x, y))
         conn.commit()
         conn.close()
         return x, y
