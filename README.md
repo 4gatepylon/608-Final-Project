@@ -10,3 +10,9 @@ Add this to your `~/.bashrc` or `~/.zshrc` (or whatever other bash profile gets 
 ```
 alias 608team="expect -c 'spawn ssh team10@608dev-2.net; expect \"password:\"; send \"9086526\r\"; interact'"
 ```
+
+# Mac Addresses for ESP Now
+`60:55:F9:D9:D7:32`
+
+# Following This Tutorial
+`https://randomnerdtutorials.com/esp-now-one-to-many-esp32-esp8266/`
