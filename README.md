@@ -10,3 +10,9 @@ Add this to your `~/.bashrc` or `~/.zshrc` (or whatever other bash profile gets 
 ```
 alias 608team="expect -c 'spawn ssh team10@608dev-2.net; expect \"password:\"; send \"9086526\r\"; interact'"
 ```
+
+# Server Interaction
+Server: http://608dev-2.net/sandbox/sc/team10/server.py
+
+POST request takes x, y as multipart/form-data
+GET request just returns plots of data
