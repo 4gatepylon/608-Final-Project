@@ -22,3 +22,8 @@ Server: http://608dev-2.net/sandbox/sc/team10/server.py
 
 POST request takes x, y as multipart/form-data
 GET request just returns plots of data
+
+# MAC Address
+
+Natasha
+7C:DF:A1:15:3A:14
