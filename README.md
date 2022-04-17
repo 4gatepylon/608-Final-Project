@@ -14,5 +14,11 @@ alias 608team="expect -c 'spawn ssh team10@608dev-2.net; expect \"password:\"; s
 # Mac Addresses for ESP Now
 `60:55:F9:D9:D7:32`
 
-# Following This Tutorial
+(Following this tutorial)
 `https://randomnerdtutorials.com/esp-now-one-to-many-esp32-esp8266/`
+
+# Server Interaction
+Server: http://608dev-2.net/sandbox/sc/team10/server.py
+
+POST request takes x, y as multipart/form-data
+GET request just returns plots of data
