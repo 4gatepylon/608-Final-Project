@@ -12,7 +12,9 @@ alias 608team="expect -c 'spawn ssh team10@608dev-2.net; expect \"password:\"; s
 ```
 
 # Mac Addresses for ESP Now
-`60:55:F9:D9:D7:32`
+Sender (adriano) `60:55:F9:D9:D7:32`
+
+Reciever (natasha using dani's board) `7C:DF:A1:15:3A:14`
 
 (Following this tutorial)
 `https://randomnerdtutorials.com/esp-now-one-to-many-esp32-esp8266/`
