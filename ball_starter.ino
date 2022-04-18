@@ -223,11 +223,11 @@ class Ball {
         direction = 3; // RIGHT 
       }
 
-      
 
-      /*
+
+      
       char body[4072]; 
-      sprintf(body,"a_x=%f&a_y=%f&v_x=%f&v_y=%f&x_x=%f&x_y=%f",acceleration.x,acceleration.y,velocity.x, velocity.y, position.x, position.y); // HOW TO GET ARTIST
+      sprintf(body,"a_x=%f&a_y=%f&v_x=%f&v_y=%f&x_x=%f&x_y=%f&angle=%f&dir=%d",acceleration.x,acceleration.y,velocity.x, velocity.y, position.x, position.y, angle, direction); // HOW TO GET ARTIST
       int body_len = strlen(body); //calculate body length (for header reporting) 
       sprintf(request_buffer,"POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
       strcat(request_buffer,"Host: 608dev-2.net\r\n"); 
@@ -238,7 +238,7 @@ class Ball {
       strcat(request_buffer,"\r\n"); //new line
       //Serial.println(request_buffer); 
       do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT,true);  
-*/
+
       // You should update velocity even when you just barely touch, but not
       // position in that case
       
