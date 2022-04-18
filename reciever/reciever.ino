@@ -7,7 +7,7 @@
 
 TFT_eSPI tft = TFT_eSPI(); // Invoke library, pins defined in User_Setup.h
 
-char network[] = "MIT GUEST";
+char network[] = "MIT";
 char password[] = "";
 const char user[] = "";
 const int RESPONSE_TIMEOUT = 6000;     // ms to wait for response from host
@@ -251,8 +251,24 @@ void loop()
       angle,
       direction,
       speed);
+    
+  Serial.println("SPEED");
   Serial.println(speed);
-  Serial.println(direction);
+  Serial.println("DIRECTION");
+  if (direction==0){
+    Serial.println("UP");
+  }
+  if (direction==1){
+    Serial.println("DOWN");
+  }
+  if (direction==2){
+    Serial.println("LEFT");
+  }
+  if (direction==3){
+    Serial.println("RIGHT");
+  }
+  
+  
   int body_len = strlen(body); // calculate body length (for header reporting)
   sprintf(request_buffer, "POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev-2.net\r\n");
