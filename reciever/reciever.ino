@@ -229,6 +229,7 @@ void setup()
 void loop()
 {
   float angle = atan2(recvme.velocity.y, recvme.velocity.x);
+  float speed = sqrt(recvme.velocity.y * recvme.velocity.y + recvme.velocity.x *recvme.velocity.x);
   if (angle > 45 && angle < 135)
   {
     direction = 0; // UP
@@ -249,7 +250,7 @@ void loop()
   // Draw based on the position (which should be updated by the sender)
   char body[4072];
   sprintf(
-      body, "a_x=%f&a_y=%f&v_x=%f&v_y=%f&x_x=%f&x_y=%f&angle=%f&dir=%d",
+      body, "a_x=%f&a_y=%f&v_x=%f&v_y=%f&x_x=%f&x_y=%f&angle=%f&dir=%d&speed=%f",
       recvme.acceleration.x,
       recvme.acceleration.y,
       recvme.velocity.x,
@@ -257,7 +258,10 @@ void loop()
       recvme.position.x,
       recvme.position.y,
       angle,
-      direction);
+      direction,
+      speed); 
+  Serial.println(speed); 
+  Serial.println(direction); 
   int body_len = strlen(body); // calculate body length (for header reporting)
   sprintf(request_buffer, "POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
   strcat(request_buffer, "Host: 608dev-2.net\r\n");
