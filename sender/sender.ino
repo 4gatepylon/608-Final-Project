@@ -24,6 +24,15 @@ struct Vec
   float y;
 };
 
+struct WireData
+{
+  Vec position;
+  Vec acceleration;
+  Vec velocity;
+};
+
+WireData sendme;
+
 uint32_t primary_timer; // main loop timer
 
 // state variables:
@@ -189,8 +198,12 @@ void loop()
   step(x * SCALER, y * SCALER);
   tft.fillCircle(position.x, position.y, RADIUS, BALL_COLOR);
 
+  memcpy(&(sendme.acceleration), &acceleration, sizeof(Vec));
+  memcpy(&(sendme.velocity), &velocity, sizeof(Vec));
+  memcpy(&(sendme.position), &position, sizeof(Vec));
+
   // send the position
-  esp_err_t result = esp_now_send(0, (uint8_t *)&position, sizeof(Vec));
+  esp_err_t result = esp_now_send(0, (uint8_t *)&sendme, sizeof(WireData));
 
   // do some error checking
   if (result == ESP_OK)
