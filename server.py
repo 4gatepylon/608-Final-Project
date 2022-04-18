@@ -18,8 +18,10 @@ def request_handler(request):
         v_y = request['form']['v_y']
         x_x = request['form']['x_x']
         x_y = request['form']['x_y']
-        c.execute("""CREATE TABLE IF NOT EXISTS data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real);""")
-        c.execute('''INSERT into data VALUES (?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y))
+        speed = request['form']['speed']
+        direction = request['form']['direction'] 
+        c.execute("""CREATE TABLE IF NOT EXISTS data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real);""")
+        c.execute('''INSERT into data VALUES (?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction))
         conn.commit()
         conn.close()
         return "done"
@@ -33,15 +35,19 @@ def request_handler(request):
         v_y_vals = []
         x_x_vals = []
         x_y_vals = []
+        speeds = []
+        directions = []
         times = []
 
-        for time_, a_x, a_y, v_x, v_y, x_x, x_y in data:
+        for time_, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction in data:
             dto = datetime.datetime.strptime(time_,'%Y-%m-%d %H:%M:%S.%f')
             times.append(dto)
             a_x_vals.append(a_x)
-            a_y_vals.append(a_x)
-            v_x_vals.append(a_x)
-            v_y_vals.append(a_x)
-            x_x_vals.append(a_x)
-            x_y_vals.append(a_x)
-        return {'times': times, 'a_x': a_x_vals, 'a_y': a_y_vals, 'v_x': v_x_vals, 'v_y': v_y_vals, 'x_x': x_x_vals, 'x_y': x_y_vals}
+            a_y_vals.append(a_y)
+            v_x_vals.append(v_x)
+            v_y_vals.append(v_y)
+            x_x_vals.append(x_x)
+            x_y_vals.append(x_y)
+            speeds.append(speed)
+            directions.append(direction)
+        return {'times': times, 'a_x': a_x_vals, 'a_y': a_y_vals, 'v_x': v_x_vals, 'v_y': v_y_vals, 'x_x': x_x_vals, 'x_y': x_y_vals, 'speeds': speeds, 'directions': directions}
