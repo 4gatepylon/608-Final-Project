@@ -20,7 +20,7 @@ def request_handler(request):
         x_x = request['form']['x_x']
         x_y = request['form']['x_y']
         speed = request['form']['speed']
-        direction = request['form']['direction'] 
+        direction = request['form']['dir'] 
         c.execute("""CREATE TABLE IF NOT EXISTS data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real);""")
         c.execute('''INSERT into data VALUES (?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction))
         conn.commit()
