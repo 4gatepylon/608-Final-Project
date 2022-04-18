@@ -9,7 +9,6 @@ function App() {
       "http://608dev-2.net/sandbox/sc/team10/server.py"
     );
     let body = await response.text();
-    console.log(body);
     setData(JSON.parse(body));
   }
 
@@ -97,6 +96,30 @@ function App() {
                 },
               ]}
               layout={{ width: 320, height: 240, title: "Y Acceleration" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data["times"],
+                  y: data["speeds"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "Speeds" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data["times"],
+                  y: data["directions"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "Directions" }}
             />
           </div>
         )}
