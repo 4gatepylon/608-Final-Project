@@ -25,20 +25,80 @@ function App() {
       <h1 className="text-lg mb-5 font-bold">Data</h1>
       <p className="text-lg">
         {data && (
-          <>
+          <div className="flex flex-row flex-wrap">
             <Plot
               data={[
                 {
-                  x: data.times,
-                  y: data.x,
+                  x: data[0]["times"],
+                  y: data[0]["x_x"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
                 },
               ]}
-              layout={{ width: 320, height: 240, title: "A Fancy Plot" }}
+              layout={{ width: 320, height: 240, title: "X Position" }}
             />
-          </>
+            <Plot
+              data={[
+                {
+                  x: data[0]["times"],
+                  y: data[0]["x_y"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "Y Position" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data[0]["times"],
+                  y: data[0]["v_x"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "X Velocity" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data[0]["times"],
+                  y: data[0]["v_y"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "Y Velocity" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data[0]["times"],
+                  y: data[0]["a_x"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "X Acceleration" }}
+            />
+            <Plot
+              data={[
+                {
+                  x: data[0]["times"],
+                  y: data[0]["a_y"],
+                  type: "scatter",
+                  mode: "lines+markers",
+                  marker: { color: "red" },
+                },
+              ]}
+              layout={{ width: 320, height: 240, title: "Y Acceleration" }}
+            />
+          </div>
         )}
       </p>
     </div>
