@@ -32,9 +32,9 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("x: ");
-  Serial.println(myData.x);
+  Serial.println(position.x);
   Serial.print("y: ");
-  Serial.println(myData.y);
+  Serial.println(position.y);
   Serial.println();
 }
 
