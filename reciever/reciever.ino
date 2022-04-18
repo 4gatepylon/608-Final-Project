@@ -135,12 +135,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
   tft.fillCircle(position.x, position.y, RADIUS, BACKGROUND);
   memcpy(&recvme, incomingData, sizeof(WireData));
+  position.x = recvme.position.x;
+  position.y = recvme.position.y;
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("x: ");
-  Serial.println(recvme.position.x);
+  Serial.println(position.x);
   Serial.print("y: ");
-  Serial.println(recvme.position.y);
+  Serial.println(position.y);
   Serial.println();
   tft.fillCircle(position.x, position.y, RADIUS, BALL_COLOR);
 }
