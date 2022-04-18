@@ -49,8 +49,7 @@ def request_handler(request):
             v_y_vals.append(v_y)
             x_x_vals.append(x_x)
             x_y_vals.append(x_y)
-	    speeds.append(speed)
-	    directions.append(direction)
-
+        speeds.append(speed)
+        directions.append(direction)
         result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
