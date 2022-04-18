@@ -130,7 +130,7 @@ void do_http_request(const char *host, char *request, char *response, uint16_t r
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
-  tft.fillCircle(position.x, position.y, RADIUS, BACKGROUND);
+  tft.fillCircle(recvme.position.x, recvme.position.y, RADIUS, BACKGROUND);
   memcpy(&recvme, incomingData, sizeof(WireData));
   Serial.print("Bytes received: ");
   Serial.println(len);
@@ -164,9 +164,6 @@ void setup()
   // Once ESPNow is successfully Init, we will register for recv CB to
   // get recv packer info
   esp_now_register_recv_cb(OnDataRecv);
-
-  position.x = 10;
-  position.y = 10;
 
   // Unclear whether this will work (it's from class code, but we are a wifi station, so...)
   // https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
