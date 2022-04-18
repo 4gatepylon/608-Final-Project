@@ -43,7 +43,7 @@ struct Vec acceleration; // acceleration of ball
 // physics constants:
 const float MASS = 1;          // for starters
 const int RADIUS = 5;          // radius of ball
-const float K_FRICTION = 0.35; // friction coefficient
+const float K_FRICTION = 0.15; // friction coefficient
 const float K_SPRING = 0.8;    // spring coefficient
 
 // boundary constants:
