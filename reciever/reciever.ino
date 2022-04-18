@@ -47,9 +47,6 @@ uint32_t direction = UP;
 
 uint32_t primary_timer; // main loop timer
 
-// state variables:
-struct Vec position; // position of ball
-
 // physics constants:
 const int RADIUS = 5; // radius of ball
 
@@ -135,16 +132,14 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
   tft.fillCircle(position.x, position.y, RADIUS, BACKGROUND);
   memcpy(&recvme, incomingData, sizeof(WireData));
-  position.x = recvme.position.x;
-  position.y = recvme.position.y;
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("x: ");
-  Serial.println(position.x);
+  Serial.println(recvme.position.x);
   Serial.print("y: ");
-  Serial.println(position.y);
+  Serial.println(recvme.position.y);
   Serial.println();
-  tft.fillCircle(position.x, position.y, RADIUS, BALL_COLOR);
+  tft.fillCircle(recvme.position.x, recvme.position.y, RADIUS, BALL_COLOR);
 }
 
 void setup()
