@@ -9,8 +9,8 @@ function App() {
       "http://608dev-2.net/sandbox/sc/team10/server.py"
     );
     let body = await response.text();
-    console.log(JSON.parse(body));
-    setData([...data, JSON.parse(body)]);
+    console.log(body);
+    setData(JSON.parse(body));
   }
 
   useEffect(() => {
@@ -29,8 +29,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["x_x"],
+                  x: data["times"],
+                  y: data["x_x"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -41,8 +41,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["x_y"],
+                  x: data["times"],
+                  y: data["x_y"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -53,8 +53,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["v_x"],
+                  x: data["times"],
+                  y: data["v_x"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -65,8 +65,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["v_y"],
+                  x: data["times"],
+                  y: data["v_y"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -77,8 +77,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["a_x"],
+                  x: data["times"],
+                  y: data["a_x"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -89,8 +89,8 @@ function App() {
             <Plot
               data={[
                 {
-                  x: data[0]["times"],
-                  y: data[0]["a_y"],
+                  x: data["times"],
+                  y: data["a_y"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
