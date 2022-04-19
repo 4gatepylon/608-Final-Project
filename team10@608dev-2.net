@@ -21,14 +21,14 @@ def request_handler(request):
         x_y = request['form']['x_y']
         speed = request['form']['speed']
         direction = request['form']['dir'] 
-        c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real);""")
-        c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction))
+        c.execute("""CREATE TABLE IF NOT EXISTS data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real);""")
+        c.execute('''INSERT into data VALUES (?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction))
         conn.commit()
         conn.close()
         return "done"
     if request["method"] == "GET":
 
-        data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
+        data = c.execute("""SELECT * FROM data ORDER BY time_ ASC;""").fetchall()
 
         a_x_vals = []
         a_y_vals = []
@@ -49,8 +49,8 @@ def request_handler(request):
             v_y_vals.append(v_y)
             x_x_vals.append(x_x)
             x_y_vals.append(x_y)
-            speeds.append(speed)
-            directions.append(direction)
+	    speeds.append(speed)
+	    directions.append(direction)
 
         result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
