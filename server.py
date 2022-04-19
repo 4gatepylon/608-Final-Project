@@ -6,7 +6,7 @@ from bokeh.embed import components
 import json
 
 #script is meant for local development and experimentation with bokeh
-new_db = "/var/jail/home/team10/database.db" 
+new_db = "/var/jail/home/team10/database_new.db" 
 
 def request_handler(request):
     now = datetime.datetime.now()
