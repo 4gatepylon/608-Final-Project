@@ -8,7 +8,12 @@ class Crud(object):
     def __init__(self):
         pass
 
-    @staticmethod
+    # Unclear why you can't @staticmethod these
+    # (I don't know what it does technically)
+    # Check out
+    # https://stackoverflow.com/questions/41921255/staticmethod-object-is-not-callable
+    # (don't hae the time and it's not that important)
+
     def withConnCursor(func):
         """ Wrap your functions in this when you want them to have access to the database"""
         def wrapper(*args, **kwargs):
@@ -20,7 +25,7 @@ class Crud(object):
             return result
         return wrapper
         
-    @staticmethod
+    
     @withConnCursor
     def handle_db_api_get(c, conn, request):
         data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
@@ -50,7 +55,6 @@ class Crud(object):
         result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
 
-    @staticmethod
     @withConnCursor
     def handle_db_api_post(c, conn, request):
         now = datetime.now()
@@ -67,7 +71,7 @@ class Crud(object):
         return "done"
 
 class Webpage(object):
-    INDEX_FILE = "index.html"
+    INDEX_FILE = "/var/jail/home/team10/index.html"
     def __init__(self):
         pass
     def handle_webpage_get(request):
