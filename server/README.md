@@ -1,25 +1,23 @@
-# 608-Final-Project
-Gesture Controlled Robot
+# How this works
+You try and output your react build output into index.html.
 
-# Server Credentials
-Username: team10
-Password: 9086526
+# Server Usae
+3 endpoints:
+1. POST => post some data into the database by providing velocity, acceleration, position (etc) in each axis (x/y)
+2. GET (without any values in the html) => get something from the DB (for backwards compatbility)... returns same format as POST would expect.
+3. GET (with ANY values in the html) => get a webpage (later, our react webpage)
 
-# Create Server Connect Script
-Add this to your `~/.bashrc` or `~/.zshrc` (or whatever other bash profile gets run at inialization on your laptop):
+# Decorators example
 ```
-alias 608team="expect -c 'spawn ssh team10@608dev-2.net; expect \"password:\"; send \"9086526\r\"; interact'"
+def hi(func):
+    def wrapper(*args, **kwargs):
+        return func(3, *args, **kwargs)
+    return wrapper
+
+@hi
+def f(number1, number2):
+    print("adding {} and {}".format(number1, number2))
+    return number1 + number2
+f(2)    # works
+f(1, 2) # does not work
 ```
-
-# Mac Addresses for ESP Now
-- Sender (adriano) `60:55:F9:D9:D7:32`
-- Reciever (natasha using dani's board) `7C:DF:A1:15:3A:14`
-
-(Following this tutorial)
-`https://randomnerdtutorials.com/esp-now-one-to-many-esp32-esp8266/`
-
-# Server Interaction
-Server: http://608dev-2.net/sandbox/sc/team10/server.py
-
-POST request takes x, y as multipart/form-data
-GET request just returns plots of data
