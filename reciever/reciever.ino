@@ -220,7 +220,8 @@ void setup()
 
 void loop()
 {
-  float angle = atan2(recvme.velocity.y, recvme.velocity.x);
+  float angle = atan2(recvme.velocity.y, recvme.velocity.x) * 57.2957795;
+  Serial.println(angle); 
   float speed = sqrt(recvme.velocity.y * recvme.velocity.y + recvme.velocity.x * recvme.velocity.x);
   if (angle > 45 && angle < 135)
   {
@@ -251,7 +252,7 @@ void loop()
       angle,
       direction,
       speed);
-    
+  /*
   Serial.println("SPEED");
   Serial.println(speed);
   Serial.println("DIRECTION");
@@ -267,7 +268,7 @@ void loop()
   if (direction==3){
     Serial.println("RIGHT");
   }
-  
+  */
   
   int body_len = strlen(body); // calculate body length (for header reporting)
   sprintf(request_buffer, "POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
