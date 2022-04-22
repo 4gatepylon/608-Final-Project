@@ -58,3 +58,6 @@ dkms.conf
 
 # wtf
 node_modules/
+
+# wtf
+./vscode
