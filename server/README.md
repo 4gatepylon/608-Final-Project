@@ -7,6 +7,9 @@ You try and output your react build output into index.html.
 2. GET (without any values in the html) => get something from the DB (for backwards compatbility)... returns same format as POST would expect.
 3. GET (with ANY values in the html) => get a webpage (later, our react webpage)
 
+# Images
+Either the images should be all from other sites (places than can serve the images) or they should be SVGs or otherwise embeddable in a single HTML file.
+
 # Decorators example
 ```
 def hi(func):
