@@ -92,7 +92,7 @@ class GeoFencer(object):
         pass
 
     # NOTE: this is not used yet
-    def bounding_box(point_coord: Tuple[int, int], box: Tuple[int, int]):
+    def bounding_box(point_coord: Tuple[int, int], box: Tuple[int, int]) -> bool:
         x, y = point_coord
 
         left = min(box, key=lambda tp: tp[0])[0]
@@ -102,7 +102,7 @@ class GeoFencer(object):
         
         return left <= x and x <= right and top <= y and y <= bot
     
-    def within_area(point_coord: Tuple[int, int], poly: List[Tuple[int, int]]):
+    def within_area(point_coord: Tuple[int, int], poly: List[Tuple[int, int]]) -> bool:
         x0, y0 = point_coord
 
         # Zero out the polygon to use the algorithm described in the lab (5A, linked here
@@ -151,6 +151,19 @@ class GeoFencer(object):
 
 class Crud(object):
     DB_FILE = "/var/jail/home/team10/database_new.db" 
+    DB_FORMAT = {
+        "time_": datetime,
+        "a_x": float,
+        "a_y": float,
+        "v_x": float,
+        "v_y": float,
+        "x_x": float,
+        "y_y": float,
+        "speed": float,
+        "direction": float,
+    }
+
+
     def __init__(self):
         pass
 
@@ -160,7 +173,7 @@ class Crud(object):
     # https://stackoverflow.com/questions/41921255/staticmethod-object-is-not-callable
     # (don't hae the time and it's not that important)
 
-    def withConnCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], Any]):
+    def withConnCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str]) -> str:
         """ Wrap your functions in this when you want them to have access to the database"""
         def wrapper(*args, **kwargs):
             conn = sqlite3.connect(Crud.DB_FILE)
@@ -170,10 +183,15 @@ class Crud(object):
             conn.close()
             return result
         return wrapper
+    
+
+    # TODO
+    def create_table():
+        pass
         
     
     @withConnCursor
-    def handle_db_api_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any):
+    def handle_db_api_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
 
         a_x_vals = []
@@ -203,9 +221,23 @@ class Crud(object):
 
         result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
+    
+    @withConnCursor
+    def handle_whereami(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
+        if not "x" in request["values"] or not "y" in request["values"]:
+            return "Error: please provide x and y"
+        x_str: str = request["values"]["x"]
+        y_str: str = request["values"]["y"]
+        try:
+            x: float = float(x_str)
+            y: float = float(y_str)
+            loc: str = GeoFencer.get_area((x, y))
+            return loc
+        except Exception as e:
+            return f"Error: please provide x and y as floats, had error: {e}"
 
     @withConnCursor
-    def handle_db_api_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any):
+    def handle_db_api_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         now = datetime.now()
         a_x = request['form']['a_x']
         a_y = request['form']['a_y']
@@ -237,6 +269,8 @@ def request_handler(request: Any):
     if request["method"] == "GET":
         has_value = "values" in request and len(request["values"]) > 0
         if has_value:
+            if "whereami" in request["values"]:
+                return Crud.handle_whereami(request)
             return Webpage.handle_webpage_get(request)
         else:
             return Crud.handle_db_api_get(request)

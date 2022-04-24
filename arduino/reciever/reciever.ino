@@ -4,9 +4,9 @@
 
 // Unfortunately this nonsense is necessary because Arduino copies the file contents to some
 // other folder.
-#define LIB_PATH_ADRIANO
+// # define LIB_PATH_ADRIANO
 // #define LIB_PATH_SUALEH
-// #define LIB_PATH_NATASHA
+#define LIB_PATH_NATASHA
 // #define LIB_PATH_DANIELA
 
 #ifdef LIB_PATH_ADRIANO
@@ -18,25 +18,125 @@
 #endif
 
 #ifdef LIB_PATH_NATASHA
-#include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
+#include "/Users/natashamaniar/Documents/git/608-Final-Project/arduino/lib.h"
 #endif
 
 #ifdef LIB_PATH_DANIELA
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
-const int motor1Pin1 = 27;
-const int motor1Pin2 = 26;
-
-const int motor2Pin1 = 28;
-const int motor2Pin2 = 29;
-
-const int enable1Pin = 14;
-const int enable2Pin = 15;
-
 uint32_t primary_timer; // main loop timer
 
 WireData info;
+
+int motor1Pin1 = 38;
+int motor1Pin2 = 39;
+
+int motor2Pin1 = 40;
+int motor2Pin2 = 41;
+
+int enable1Pin = 37;
+int enable2Pin = 42;
+
+const uint8_t MAX_SPEED = 23;
+int motorSpeedA = 0;
+int motorSpeedB = 0;
+
+// Setting PWM properties
+// const int freq = 30000;
+// const int pwmChannel = 0;
+// const int resolution = 8;
+// int dutyCycle = 200;
+
+/*
+MOVE BASED ON DIRECTION
+*/
+void moveCar(uint8_t direction, uint8_t speed)
+{
+  if (direction == 1)
+  {
+
+    motorSpeedA = map(speed, MAX_SPEED, 0, 0, 255);
+    motorSpeedB = map(speed, MAX_SPEED, 0, 0, 255);
+    analogWrite(enable1Pin, motorSpeedA);
+    analogWrite(enable2Pin, motorSpeedB);
+    moveBack();
+  }
+  if (direction == 0)
+  {
+
+    motorSpeedA = map(speed, 550, 1023, 0, 255); // ASK ABOUT PWM CYCLE
+    motorSpeedB = map(speed, 550, 1023, 0, 255); // ASK ABOUT PWM CYCLE
+    analogWrite(enable1Pin, motorSpeedA);
+    analogWrite(enable2Pin, motorSpeedB);
+    moveForward();
+  }
+
+  if (direction == 2)
+  { // RIGHT
+    int changex = map(speed, MAX_SPEED, 0, 0, 255);
+    motorSpeedA = motorSpeedA - changex;
+    motorSpeedB = motorSpeedB + changex;
+    analogWrite(enable1Pin, motorSpeedA);
+    analogWrite(enable2Pin, motorSpeedB);
+
+    digitalWrite(motor1Pin1, LOW);
+    digitalWrite(motor1Pin2, LOW);
+    digitalWrite(motor2Pin1, LOW);
+    digitalWrite(motor2Pin2, HIGH);
+  }
+
+  if (direction == 3)
+  { // LEFT
+    int changex = map(speed, 550, 1023, 0, 255);
+    motorSpeedA = motorSpeedA - changex;
+    motorSpeedB = motorSpeedB + changex;
+    analogWrite(enable1Pin, motorSpeedA);
+    analogWrite(enable2Pin, motorSpeedB);
+    digitalWrite(motor1Pin1, LOW);
+    digitalWrite(motor1Pin2, HIGH);
+    digitalWrite(motor2Pin1, LOW);
+    digitalWrite(motor2Pin2, LOW);
+  }
+
+  if (motorSpeedA < 0)
+  {
+    motorSpeedA = 0;
+  }
+  if (motorSpeedB > 255)
+  {
+    motorSpeedB = 255;
+  }
+}
+
+void moveBack()
+{
+  digitalWrite(motor1Pin1, HIGH);
+  digitalWrite(motor1Pin2, LOW);
+  digitalWrite(motor2Pin1, HIGH);
+  digitalWrite(motor2Pin2, LOW);
+}
+
+void moveForward()
+{
+  digitalWrite(motor1Pin1, LOW);
+  digitalWrite(motor1Pin2, HIGH);
+  digitalWrite(motor2Pin1, LOW);
+  digitalWrite(motor2Pin2, HIGH);
+}
+
+// callback function that will be executed when data is received
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+  memcpy(&info, incomingData, sizeof(WireData));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("x: ");
+  Serial.println(info.tilt.x);
+  Serial.print("y: ");
+  Serial.println(info.tilt.y);
+  Serial.println();
+}
 
 void setup()
 {
@@ -161,6 +261,7 @@ void loop()
   // Serial.println(request_buffer);
   do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
 
+  moveCar(info.direction, info.speed);
   // Wait number of unit time per frame: might want to change this on the reciever side
   while (millis() - primary_timer < DT)
     ;
