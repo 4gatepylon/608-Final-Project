@@ -206,6 +206,8 @@ class Crud(object):
         # It is a list of tuples to enforce order
         # for insertions and reads from the database
         (None, "time_", "timestamp", "times"),
+        ("a_x", "tilt_x", "real", "x_tilts")
+        ("a_y", "tilt_y", "real", "y_tilts")
         ("lon", "longitude", "real", "latitudes"),
         ("lat", "latitude", "real", "longitudes"),
         ("speed", "speed", "real", "speeds"),

@@ -29,7 +29,7 @@ function App() {
               data={[
                 {
                   x: data["times"],
-                  y: data["x_x"],
+                  y: data["latitudes"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
@@ -41,61 +41,13 @@ function App() {
               data={[
                 {
                   x: data["times"],
-                  y: data["x_y"],
+                  y: data["longitudes"],
                   type: "scatter",
                   mode: "lines+markers",
                   marker: { color: "red" },
                 },
               ]}
               layout={{ width: 320, height: 240, title: "Y Position" }}
-            />
-            <Plot
-              data={[
-                {
-                  x: data["times"],
-                  y: data["v_x"],
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "red" },
-                },
-              ]}
-              layout={{ width: 320, height: 240, title: "X Velocity" }}
-            />
-            <Plot
-              data={[
-                {
-                  x: data["times"],
-                  y: data["v_y"],
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "red" },
-                },
-              ]}
-              layout={{ width: 320, height: 240, title: "Y Velocity" }}
-            />
-            <Plot
-              data={[
-                {
-                  x: data["times"],
-                  y: data["a_x"],
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "red" },
-                },
-              ]}
-              layout={{ width: 320, height: 240, title: "X Acceleration" }}
-            />
-            <Plot
-              data={[
-                {
-                  x: data["times"],
-                  y: data["a_y"],
-                  type: "scatter",
-                  mode: "lines+markers",
-                  marker: { color: "red" },
-                },
-              ]}
-              layout={{ width: 320, height: 240, title: "Y Acceleration" }}
             />
             <Plot
               data={[
