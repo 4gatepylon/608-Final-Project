@@ -1,11 +1,11 @@
-int motor1Pin1 = 27; 
-int motor1Pin2 = 26; 
+int motor1Pin1 = 38; 
+int motor1Pin2 = 39; 
 
-int motor2Pin1 = 28; 
-int motor2Pin2 = 29; 
+int motor2Pin1 = 40; 
+int motor2Pin2 = 41; 
 
-int enable1Pin = 14; 
-int enable2Pin = 15; 
+int enable1Pin = 37; 
+int enable2Pin = 42; 
 
 const uint8_t BUTTON1 = 39; // press for long time and posts to server
 const uint8_t IDLE = 0; // press for long time and posts to server
@@ -131,7 +131,7 @@ void moveForward(){
 void loop() {
   // Move the DC motor forward at maximum speed
   stopcar(BUTTON1);
-  moveCar(direction,speed);
+  moveCar(direction,speed); 
 
   if (motorSpeedA < 0) {
       motorSpeedA = 0;
