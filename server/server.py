@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 import json
 
-from typing import Callable, Dict, List, Tuple, Any
+from typing import Callable, List, Tuple, Any
 
 class GeoFencer(object):
     MIT_LOCATIONS = {
@@ -143,8 +143,8 @@ class GeoFencer(object):
                     count += 1
         return count % 2 == 1
     
-    def get_area(point_coord: Tuple[int, int], locations: Dict[str, List[Tuple[int, int]]]):
-        for name, poly in locations.items():
+    def get_area(point_coord: Tuple[int, int]):
+        for name, poly in GeoFencer.MIT_LOCATIONS.items():
             if GeoFencer.within_area(point_coord, poly) % 2 == 1:
                 return name
         return "Off Campus"
@@ -189,10 +189,13 @@ class Crud(object):
         for time_, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction in data:
             dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
             times.append(dto.strftime("%m/%d/%Y, %H:%M:%S"))
+            # acceleration is tilt
             a_x_vals.append(a_x)
             a_y_vals.append(a_y)
+            # velocity is unused
             v_x_vals.append(v_x)
             v_y_vals.append(v_y)
+            # x/y is now the lat/lon
             x_x_vals.append(x_x)
             x_y_vals.append(x_y)
             speeds.append(speed)
@@ -211,9 +214,10 @@ class Crud(object):
         x_x = request['form']['x_x']
         x_y = request['form']['x_y']
         speed = request['form']['speed']
-        direction = request['form']['dir'] 
-        c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real);""")
-        c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction))
+        direction = request['form']['dir']
+        build = GeoFencer.get_area((x_x, x_y))
+        c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real, building text);""")
+        c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction, build))
         return "done"
 
 class Webpage(object):
