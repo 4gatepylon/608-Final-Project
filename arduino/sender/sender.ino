@@ -39,6 +39,11 @@ uint32_t primary_timer; // main loop timer
 
 MPU6050 imu; // imu object called, appropriately, imu
 
+bool MOVING;
+
+const int MOVE_BUTTON = 39;
+Button move_button(MOVE_BUTTON);
+
 // callback when data is sent
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
@@ -93,6 +98,9 @@ void setup()
     Serial.println("Failed to add peer");
     return;
   }
+
+  pinMode(MOVE_BUTTON, INPUT_PULLUP);
+  MOVING = false;
 }
 
 void loop()
@@ -102,7 +110,7 @@ void loop()
   tft.println(x);
   tft.println(y);
 
-  // TODO this is buggy
+  // TODO this is buggy (maybe, maybe not, it is unknown)
   float angle = atan2(y, x) * 57.2957795;
   Serial.println(angle);
   float speed = 23;
@@ -123,6 +131,18 @@ void loop()
   else // if (angle < 45 && angle > 315)
   {
     direction = RIGHT;
+  }
+
+  int moveFlag = move_button.update();
+  if (moveFlag > 0)
+  {
+    MOVING = !MOVING;
+  }
+
+  if (!MOVING)
+  {
+    speed = 0;
+    direction = NONE;
   }
 
   info.tilt.x = x;

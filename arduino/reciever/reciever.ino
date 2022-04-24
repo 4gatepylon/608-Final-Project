@@ -38,43 +38,15 @@ int motor2Pin2 = 41;
 int enable1Pin = 37;
 int enable2Pin = 42;
 
-const uint8_t IDLE = 0; // press for long time and posts to server
-const uint8_t UP = 1;   // press for long time and posts to server
-const uint8_t DOWN = 2; // press for long time and posts to server
-const uint8_t button_state = IDLE;
 const uint8_t MAX_SPEED = 23;
 int motorSpeedA = 0;
 int motorSpeedB = 0;
 
 // Setting PWM properties
-const int freq = 30000;
-const int pwmChannel = 0;
-const int resolution = 8;
-int dutyCycle = 200;
-
-void setup()
-{
-  // sets the pins as outputs:
-  pinMode(motor1Pin1, OUTPUT);
-  pinMode(motor1Pin2, OUTPUT);
-  pinMode(enable1Pin, OUTPUT);
-
-  pinMode(motor2Pin1, OUTPUT);
-  pinMode(motor2Pin2, OUTPUT);
-  pinMode(enable2Pin, OUTPUT);
-
-  // configure LED PWM functionalitites
-  ledcSetup(pwmChannel, freq, resolution);
-
-  // attach the channel to the GPIO to be controlled
-  ledcAttachPin(enable1Pin, pwmChannel);
-  ledcAttachPin(enable2Pin, pwmChannel);
-
-  Serial.begin(115200);
-
-  // testing
-  Serial.print("Testing DC Motor...");
-}
+// const int freq = 30000;
+// const int pwmChannel = 0;
+// const int resolution = 8;
+// int dutyCycle = 200;
 
 /*
 MOVE BASED ON DIRECTION
