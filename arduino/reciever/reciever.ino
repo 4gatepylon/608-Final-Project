@@ -25,26 +25,31 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
+const int motor1Pin1 = 27;
+const int motor1Pin2 = 26;
+
+const int motor2Pin1 = 28;
+const int motor2Pin2 = 29;
+
+const int enable1Pin = 14;
+const int enable2Pin = 15;
+
 uint32_t primary_timer; // main loop timer
 
 WireData info;
 
-// callback function that will be executed when data is received
-void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
-{
-  memcpy(&info, incomingData, sizeof(WireData));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  Serial.print("x: ");
-  Serial.println(info.tilt.x);
-  Serial.print("y: ");
-  Serial.println(info.tilt.y);
-  Serial.println();
-}
-
 void setup()
 {
   Serial.begin(115200); // for debugging if needed.
+
+  // Motor pins and enable pins
+  pinMode(motor1Pin1, OUTPUT);
+  pinMode(motor1Pin2, OUTPUT);
+  pinMode(enable1Pin, OUTPUT);
+
+  pinMode(motor2Pin1, OUTPUT);
+  pinMode(motor2Pin2, OUTPUT);
+  pinMode(enable2Pin, OUTPUT);
 
   // Set device as a Wi-Fi Station (NOT A ACCESS POINT)
   WiFi.mode(WIFI_STA);
@@ -111,6 +116,19 @@ void setup()
     Serial.println(WiFi.status());
     ESP.restart(); // restart the ESP (proper way)
   }
+}
+
+// callback function that will be executed when data is received
+void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
+{
+  memcpy(&info, incomingData, sizeof(WireData));
+  Serial.print("Bytes received: ");
+  Serial.println(len);
+  Serial.print("x: ");
+  Serial.println(info.tilt.x);
+  Serial.print("y: ");
+  Serial.println(info.tilt.y);
+  Serial.println();
 }
 
 void loop()
