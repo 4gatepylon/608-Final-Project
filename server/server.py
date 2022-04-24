@@ -151,6 +151,19 @@ class GeoFencer(object):
 
 class Crud(object):
     DB_FILE = "/var/jail/home/team10/database_new.db" 
+    DB_FORMAT = {
+        "time_": datetime,
+        "a_x": float,
+        "a_y": float,
+        "v_x": float,
+        "v_y": float,
+        "x_x": float,
+        "y_y": float,
+        "speed": float,
+        "direction": float,
+    }
+
+
     def __init__(self):
         pass
 
@@ -170,6 +183,11 @@ class Crud(object):
             conn.close()
             return result
         return wrapper
+    
+
+    # TODO
+    def create_table():
+        pass
         
     
     @withConnCursor
