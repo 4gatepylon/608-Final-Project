@@ -1,19 +1,3 @@
-/*
- * Copyright 2021 Google LLC. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
@@ -28,6 +12,11 @@ import { Map, Marker } from "./components/Map";
 import { useData, ServerData, RobotPlots } from "./components/RobotPlots";
 
 console.log(process.env);
+
+// TODOs for the future:
+// - Add a buttom to make a path across MIT using the time
+// - update the logo of the markers used.
+// can you push this and then update the server?
 
 type Location = google.maps.LatLngLiteral;
 
@@ -71,10 +60,6 @@ const App = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, [locationList]);
-  // if (locationList.length > 0) {
-  //   setCenter(locationList[locationList.length - 1]);
-  //   setZoom(MIT_Zoom + 4);
-  // }
 
   const onClick = (e: google.maps.MapMouseEvent) => {
     setClicks([...clicks, e.latLng!]);
