@@ -23,3 +23,6 @@ Server: http://608dev-2.net/sandbox/sc/team10/server.py
 
 POST request takes x, y as multipart/form-data
 GET request just returns plots of data
+
+# SCP
+`scp build/index.html team10@608dev-2.net:/home/team10/ `
