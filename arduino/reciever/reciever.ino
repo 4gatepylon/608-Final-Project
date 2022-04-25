@@ -6,6 +6,7 @@
 // other folder.
 // # define LIB_PATH_ADRIANO
 // #define LIB_PATH_SUALEH
+
 #define LIB_PATH_NATASHA
 // #define LIB_PATH_DANIELA
 
@@ -17,8 +18,8 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
-#ifdef LIB_PATH_NATASHA
-#include "/Users/natashamaniar/Documents/git/608-Final-Project/arduino/lib.h"
+#ifdef LIB_PATH_NATASHA 
+#include "/Users/natashammaniar/Documents/608-Final-Project/arduino/lib.h"
 #endif
 
 #ifdef LIB_PATH_DANIELA
@@ -38,7 +39,6 @@ int motor2Pin2 = 41;
 int enable1Pin = 37;
 int enable2Pin = 42;
 
-const uint8_t MAX_SPEED = 23;
 int motorSpeedA = 0;
 int motorSpeedB = 0;
 
@@ -53,28 +53,28 @@ MOVE BASED ON DIRECTION
 */
 void moveCar(uint8_t direction, uint8_t speed)
 {
-  if (direction == 1)
+  if (direction == DOWN)
   {
 
-    motorSpeedA = map(speed, MAX_SPEED, 0, 0, 255);
-    motorSpeedB = map(speed, MAX_SPEED, 0, 0, 255);
+    motorSpeedA = speed;
+    motorSpeedB = speed;
     analogWrite(enable1Pin, motorSpeedA);
     analogWrite(enable2Pin, motorSpeedB);
     moveBack();
   }
-  if (direction == 0)
+  if (direction == UP)
   {
 
-    motorSpeedA = map(speed, 550, 1023, 0, 255); // ASK ABOUT PWM CYCLE
-    motorSpeedB = map(speed, 550, 1023, 0, 255); // ASK ABOUT PWM CYCLE
+    motorSpeedA = speed;
+    motorSpeedB = speed;
     analogWrite(enable1Pin, motorSpeedA);
     analogWrite(enable2Pin, motorSpeedB);
     moveForward();
   }
 
-  if (direction == 2)
+  if (direction == RIGHT)
   { // RIGHT
-    int changex = map(speed, MAX_SPEED, 0, 0, 255);
+    int changex = speed;
     motorSpeedA = motorSpeedA - changex;
     motorSpeedB = motorSpeedB + changex;
     analogWrite(enable1Pin, motorSpeedA);
@@ -86,9 +86,9 @@ void moveCar(uint8_t direction, uint8_t speed)
     digitalWrite(motor2Pin2, HIGH);
   }
 
-  if (direction == 3)
+  if (direction == LEFT)
   { // LEFT
-    int changex = map(speed, 550, 1023, 0, 255);
+    int changex = speed;
     motorSpeedA = motorSpeedA - changex;
     motorSpeedB = motorSpeedB + changex;
     analogWrite(enable1Pin, motorSpeedA);
@@ -98,6 +98,13 @@ void moveCar(uint8_t direction, uint8_t speed)
     digitalWrite(motor2Pin1, LOW);
     digitalWrite(motor2Pin2, LOW);
   }
+
+  if (direction == NONE) {
+    digitalWrite(motor1Pin1, LOW);
+    digitalWrite(motor1Pin2, LOW);
+    digitalWrite(motor2Pin1, LOW);
+    digitalWrite(motor2Pin2, LOW);
+  }  
 
   if (motorSpeedA < 0)
   {
@@ -128,6 +135,7 @@ void moveForward()
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
+  Serial.println("HI");
   memcpy(&info, incomingData, sizeof(WireData));
   Serial.print("Bytes received: ");
   Serial.println(len);
@@ -150,7 +158,7 @@ void setup()
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
-
+  
   // Set device as a Wi-Fi Station (NOT A ACCESS POINT)
   WiFi.mode(WIFI_STA);
 
@@ -162,11 +170,12 @@ void setup()
   }
 
   // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
+  // get recv packer info 
   esp_now_register_recv_cb(OnDataRecv);
 
   // Unclear whether this will work (it's from class code, but we are a wifi station, so...)
   // https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
+  /**
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
   if (n == 0)
@@ -210,58 +219,25 @@ void setup()
     Serial.println(WiFi.localIP().toString() + " (" + WiFi.macAddress() + ") (" + WiFi.SSID() + ")");
     delay(500);
   }
-  else
+  else 
   { // if we failed to connect just Try again.
     Serial.println("Failed to Connect :/  Going to restart");
     Serial.println(WiFi.status());
     ESP.restart(); // restart the ESP (proper way)
   }
+  **/
+  
 }
 
-// callback function that will be executed when data is received
-void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
-{
-  memcpy(&info, incomingData, sizeof(WireData));
-  Serial.print("Bytes received: ");
-  Serial.println(len);
-  Serial.print("x: ");
-  Serial.println(info.tilt.x);
-  Serial.print("y: ");
-  Serial.println(info.tilt.y);
-  Serial.println();
-}
 
 void loop()
 {
   // TODO use google api to get the lat and long and our labwork to get the location on the map
-  char body[4072];
-  sprintf(
-      body, "a_x=%f&a_y=%f&v_x=%f&v_y=%f&x_x=%f&x_y=%f&angle=%f&dir=%d&speed=%f",
-      // TODO this is not acceleration!
-      info.tilt.x,
-      info.tilt.y,
-      // TODO this needs to be fixed
-      0,
-      0,
-      // TODO this needs to be fixed
-      0,
-      0,
-      info.angle,
-      info.direction,
-      info.speed);
-
-  int body_len = strlen(body); // calculate body length (for header reporting)
-  sprintf(request_buffer, "POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
-  strcat(request_buffer, "Host: 608dev-2.net\r\n");
-  strcat(request_buffer, "Content-Type: application/x-www-form-urlencoded\r\n");
-  sprintf(request_buffer + strlen(request_buffer), "Content-Length: %d\r\n", body_len); // append string formatted to end of request buffer
-  strcat(request_buffer, "\r\n");                                                       // new line from header to body
-  strcat(request_buffer, body);                                                         // body
-  strcat(request_buffer, "\r\n");                                                       // new line
-  // Serial.println(request_buffer);
-  do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-
+  /*
+  */
+  esp_now_register_recv_cb(OnDataRecv);
   moveCar(info.direction, info.speed);
+  
   // Wait number of unit time per frame: might want to change this on the reciever side
   while (millis() - primary_timer < DT)
     ;
