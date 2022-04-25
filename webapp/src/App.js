@@ -18,7 +18,6 @@ function App() {
     }, 1000);
     return () => clearInterval(interval);
   });
-
   return (
     <div className="p-10">
       <h1 className="text-lg mb-5 font-bold">Data</h1>
