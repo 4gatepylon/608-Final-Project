@@ -194,7 +194,7 @@ class GeoFencer(object):
         return "Off Campus"
 
 class Crud(object):
-    DB_FILE = "/var/jail/home/team10/database_new.db" 
+    DB_FILE = "/var/jail/home/team10/information.db" 
 
     def __init__(self):
         pass
@@ -229,8 +229,9 @@ class Crud(object):
         speeds = []
         directions = []
         times = []
+        buildings = []
 
-        for time_, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction in data:
+        for time_, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction, building in data:
             dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
             times.append(dto.strftime("%m/%d/%Y, %H:%M:%S"))
             # acceleration is tilt
@@ -244,8 +245,9 @@ class Crud(object):
             x_y_vals.append(x_y)
             speeds.append(speed)
             directions.append(direction)
+            buildings.append(building)
 
-        result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions}
+        result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions, 'buildings': buildings}
         return json.dumps(result_dict)
     
     @withConnCursor
@@ -265,7 +267,7 @@ class Crud(object):
     @withConnCursor
     def handle_wherehaveibeen(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
-        tlocs_ = [(time_, (x_x, x_y)) for (time_, _, _, _, _, x_x, x_y, _, _, build) in data]
+        tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, _, _, _, _, x_x, x_y, _, _, build) in data]
         # In theory the building is necessary, but it is what it is
         tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_]
         return LOCATIONS_HTML(tlocs)
@@ -302,7 +304,7 @@ class Webpage(object):
 
 def request_handler(request: Any):
     if request['method'] == 'POST':
-        return Crud.handle_db_api_get(request)
+        return Crud.handle_db_api_post(request)
     if request["method"] == "GET":
         has_value = "values" in request and len(request["values"]) > 0
         if has_value:
