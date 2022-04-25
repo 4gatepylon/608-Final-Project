@@ -1,6 +1,10 @@
 # How this works
 You try and output your react build output into index.html.
 
+## Service:
+
+This is served on: https://608dev-2.net/sandbox/sc/team10/server.py?values=[2]
+
 # Server Usae
 3 endpoints:
 1. POST => post some data into the database by providing velocity, acceleration, position (etc) in each axis (x/y)

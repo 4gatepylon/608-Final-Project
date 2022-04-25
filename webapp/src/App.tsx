@@ -1,18 +1,43 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import Plot from "react-plotly.js";
 
+type ServerData = {
+  times: number[];
+  x_x: number[];
+  x_y: number[];
+  v_x: number[];
+  v_y: number[];
+  a_x: number[];
+  a_y: number[];
+  speeds: number[];
+  directions: number[];
+};
+
 function App() {
-  const [data, setData] = useState([]);
+  let emptyData: ServerData = {
+    times: [],
+    x_x: [],
+    x_y: [],
+    v_x: [],
+    v_y: [],
+    a_x: [],
+    a_y: [],
+    speeds: [],
+    directions: [],
+  };
+
+  const [data, setData] = React.useState(emptyData);
 
   async function fetchData() {
     let response = await fetch(
       "http://608dev-2.net/sandbox/sc/team10/server.py"
     );
-    let body = await response.text();
-    setData(JSON.parse(body));
+    let body: string = await response.text();
+    let data: ServerData = JSON.parse(body);
+    setData(data);
   }
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       fetchData();
     }, 1000);
@@ -21,7 +46,9 @@ function App() {
 
   return (
     <div className="p-10">
-      <h1 className="text-lg mb-5 font-bold">Data</h1>
+      <div className="text-xl mb-5 font-bold underline text-slate-800">
+        Data
+      </div>
       <p className="text-lg">
         {data && (
           <div className="flex flex-row flex-wrap">
