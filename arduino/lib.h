@@ -6,6 +6,8 @@
 
 enum Direction
 {
+    // None is identical to speed 0 in any direction
+    NONE,
     UP,
     DOWN,
     LEFT,
