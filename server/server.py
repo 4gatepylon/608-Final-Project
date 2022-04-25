@@ -5,6 +5,50 @@ import json
 
 from typing import Callable, List, Tuple, Any
 
+HTML_HEADER: str = """
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		table {
+			font-family: arial, sans-serif;
+			border-collapse: collapse;
+			width: 100%;
+		}
+		td,
+		th {
+			border: 1px solid #dddddd;
+			text-align: left;
+			padding: 8px;
+		}
+		h2 {
+			font-family: arial, sans-serif;
+		}
+		body {
+			padding: 40px;
+		}
+		tr:nth-child(even) {
+			background-color: #dddddd;
+		}
+	</style>
+</head>
+<body>
+	<h2>Highscores</h2>
+	<table>
+		<tr>
+			<th>Name</th>
+            <th>Category</th>
+			<th>Score</th>
+		</tr>
+"""
+
+HTML_FOOTER: str = "</table></body></html>"
+
+def LOCATIONS_HTML(timestamped_locations):
+    fmt = "%m/%d/%Y, %H:%M:%S"
+    entries = "".join([f"<tr><td>{name}</td><td>{time.strftime(fmt)}</td></tr>" for time, name in timestamped_locations])
+    return HTML_HEADER + entries + HTML_FOOTER
+
 class GeoFencer(object):
     MIT_LOCATIONS = {
         "Student Center": [
@@ -217,6 +261,14 @@ class Crud(object):
             return loc
         except Exception as e:
             return f"Error: please provide x and y as floats, had error: {e}"
+    
+    @withConnCursor
+    def handle_wherehaveibeen(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
+        data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
+        tlocs_ = [(time_, (x_x, x_y)) for (time_, _, _, _, _, x_x, x_y, _, _, build) in data]
+        # In theory the building is necessary, but it is what it is
+        tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_]
+        return LOCATIONS_HTML(tlocs)
 
     @withConnCursor
     def handle_db_api_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
@@ -256,6 +308,8 @@ def request_handler(request: Any):
         if has_value:
             if "whereami" in request["values"]:
                 return Crud.handle_whereami(request)
+            elif "wherehaveibeen" in request["values"]:
+                return Crud.handle_wherehaveibeen(request)
             return Webpage.handle_webpage_get(request)
         else:
             return Crud.handle_db_api_get(request)
