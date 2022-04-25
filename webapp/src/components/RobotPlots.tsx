@@ -13,7 +13,7 @@ export type ServerData = {
   directions: number[];
 };
 
-function RobotPlots() {
+export function useData() {
   let emptyData: ServerData = {
     times: [],
     x_x: [],
@@ -44,6 +44,10 @@ function RobotPlots() {
     return () => clearInterval(interval);
   });
 
+  return data;
+}
+
+export function RobotPlots(data: ServerData) {
   return (
     <div className="p-10">
       <div className="text-xl mb-5 font-bold underline text-slate-800">
