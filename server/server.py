@@ -36,17 +36,16 @@ HTML_HEADER: str = """
 	<h2>Highscores</h2>
 	<table>
 		<tr>
-			<th>Name</th>
-            <th>Category</th>
-			<th>Score</th>
+			<th>Location</th>
+            <th>Time</th>
 		</tr>
 """
 
 HTML_FOOTER: str = "</table></body></html>"
 
 def LOCATIONS_HTML(timestamped_locations):
-    fmt = "%m/%d/%Y, %H:%M:%S"
-    entries = "".join([f"<tr><td>{name}</td><td>{time.strftime(fmt)}</td></tr>" for time, name in timestamped_locations])
+    # Have to reverse because we add from top to bottom and want newest first
+    entries = "".join(reversed([f"<tr><td>{name}</td><td>{time}</td></tr>" for time, name in timestamped_locations]))
     return HTML_HEADER + entries + HTML_FOOTER
 
 class GeoFencer(object):
@@ -275,15 +274,15 @@ class Crud(object):
     @withConnCursor
     def handle_db_api_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         now = datetime.now()
-        a_x = request['form']['a_x']
-        a_y = request['form']['a_y']
-        v_x = request['form']['v_x']
-        v_y = request['form']['v_y']
-        x_x = request['form']['x_x']
-        x_y = request['form']['x_y']
+        a_x = float(request['form']['a_x'])
+        a_y = float(request['form']['a_y'])
+        v_x = float(request['form']['v_x'])
+        v_y = float(request['form']['v_y'])
+        x_x = float(request['form']['x_x'])
+        x_y = float(request['form']['x_y'])
         speed = request['form']['speed']
         direction = request['form']['dir']
-        build = GeoFencer.get_area((x_x, x_y))
+        build = GeoFencer.get_area((float(x_x), float(x_y)))
         c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real, building text);""")
         c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction, build))
         return "done"
