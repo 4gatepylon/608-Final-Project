@@ -2,8 +2,12 @@
 #define BACKGROUND TFT_GREEN
 #define BALL_COLOR TFT_BLUE
 
-#define DT 80
-#define DT_SERVER 200
+// Every 80 ms send to the esp now
+// Every 5 s send to the server
+// Every 10 s scan wifi to figure out lat and lon
+#define DT_ESP_NOW 80
+#define DT_SERVER 5000
+#define DT_WIFI 10000
 
 const int MAX_APS = 20;
 
@@ -51,7 +55,7 @@ const uint16_t IN_BUFFER_SIZE = 3500;  // size of buffer to hold HTTP request
 const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
 const uint16_t JSON_BODY_SIZE = 3000;
 
-char network[] = "MIT GUEST";
+char network[] = "EECS_Labs";
 char password[] = "";
 const char user[] = "";
 char request_buffer[IN_BUFFER_SIZE];   // char array buffer to hold HTTP request
