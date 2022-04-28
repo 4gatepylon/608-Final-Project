@@ -175,7 +175,7 @@ void setup()
 
   // Unclear whether this will work (it's from class code, but we are a wifi station, so...)
   // https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
-  /**
+  
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
   if (n == 0)
@@ -225,7 +225,6 @@ void setup()
     Serial.println(WiFi.status());
     ESP.restart(); // restart the ESP (proper way)
   }
-  **/
   
 }
 
