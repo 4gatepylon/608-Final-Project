@@ -11,9 +11,9 @@
 
 // Unfortunately this nonsense is necessary because Arduino copies the file contents to some
 // other folder.
-//#define LIB_PATH_ADRIANO
+#define LIB_PATH_ADRIANO
 // #define LIB_PATH_SUALEH 
-#define LIB_PATH_NATASHA
+// #define LIB_PATH_NATASHA
 // #define LIB_PATH_DANIELA
 
 #ifdef LIB_PATH_ADRIANO
@@ -368,25 +368,25 @@ void loop()
   if (angle > 45 && angle < 135)
   {
     direction = UP;
-   
+    tft.setCursor(0,10,1);
     tft.println("UP");
   }
   else if (angle > 225 && angle < 315)
   {
     direction = DOWN;
-  
+    tft.setCursor(0,10,1);
     tft.println("DOWN");
   }
   else if (angle > 135 && angle < 225)
   {
     direction = LEFT;
-    
+    tft.setCursor(0,10,1);
     tft.println("LEFT");
   }
   else // if (angle < 45 && angle > 315)
   {
     direction = RIGHT;
-    
+    tft.setCursor(0,10,1);
     tft.println("RIGHT");
   }
 
@@ -438,8 +438,7 @@ void loop()
   esp_err_t result = esp_now_send(0, (uint8_t *)&info, sizeof(WireData));
 
   // do some error checking
-  if (result == ESP_OK)
-  {
+  if (result == ESP_OK) {
     Serial.println("Sent with success");
   }
   else
@@ -449,7 +448,7 @@ void loop()
 
 
   // Wait number of unit time per frame
-  while (millis() - primary_timer < DT)
+  while (millis() - primary_timer < DT + 100)
     ;
   primary_timer = millis();
 
