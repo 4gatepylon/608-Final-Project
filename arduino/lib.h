@@ -2,7 +2,12 @@
 #define BACKGROUND TFT_GREEN
 #define BALL_COLOR TFT_BLUE
 
-#define DT 40
+// Every 80 ms send to the esp now
+// Every 5 s send to the server
+// Every 10 s scan wifi to figure out lat and lon
+#define DT_ESP_NOW 80
+#define DT_SERVER 5000
+#define DT_WIFI 10000
 
 const int MAX_APS = 20;
 
@@ -58,13 +63,19 @@ const char user[] = "";
 char request_buffer[IN_BUFFER_SIZE];   // char array buffer to hold HTTP request
 char response_buffer[OUT_BUFFER_SIZE]; // char array buffer to hold HTTP response
 
-/*----------------------------------
- * char_append Function:
- * Arguments:
- *    char* buff: pointer to character array which we will append a
- *    char c:
- *    uint16_t buff_size: size of buffer buff
- *
- * Return value:
- *    boolean: True if character appended, False if not appended (indicating buffer full)
- */
+// Robot shit
+const float MAX_SPEED = 100;
+const float MIN_SPEED = 0;
+const float MAX_TILT_X = 0.9;
+// Less because if you test it you'll see that rotation is more intuitive this way
+const float MAX_TILT_Y = 0.7;
+const float MIN_TILT = 0.0;
+
+const float MAX_MOVE_TILT_X = MAX_TILT_X;
+const float MIN_MOVE_TILT_X = 0.25;
+const float MAX_MOVE_TILT_Y = MAX_TILT_Y;
+const float MIN_MOVE_TILT_Y = 0.25;
+
+// Bins will store speed of that quartile
+const int NUM_SPEED_BINS = 4;
+int SPEED_BINS[NUM_SPEED_BINS];
