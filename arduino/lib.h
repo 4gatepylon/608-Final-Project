@@ -16,6 +16,8 @@ enum Direction
     RIGHT
 };
 
+
+
 const char PREFIX[] = "{\"wifiAccessPoints\": [";                 // beginning of json body
 const char SUFFIX[] = "]}";                                       // suffix to POST request
 const char API_KEY[] = "AIzaSyAQ9SzqkHhV-Gjv-71LohsypXUH447GWX8"; // don't change this and don't share this
@@ -50,7 +52,7 @@ const uint16_t IN_BUFFER_SIZE = 3500;  // size of buffer to hold HTTP request
 const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
 const uint16_t JSON_BODY_SIZE = 3000;
 
-char network[] = "MIT GUEST";
+char network[] = "EECS_Labs";
 char password[] = "";
 const char user[] = "";
 char request_buffer[IN_BUFFER_SIZE];   // char array buffer to hold HTTP request
