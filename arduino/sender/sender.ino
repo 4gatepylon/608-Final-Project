@@ -32,6 +32,9 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
+#define GPS_TX_PIN 17
+#define GPS_RX_PIN 18
+
 enum button_state
 {
   S0,
@@ -147,6 +150,9 @@ int Button::update()
 
 TFT_eSPI tft = TFT_eSPI(); // Invoke library, pins defined in User_Setup.h
 
+// Let me know where I ammm
+HardwareSerial gps(2);
+
 // This is the peer's address
 uint8_t broadcastAddress[] = {0x7C, 0xDF, 0xA1, 0x15, 0x3A, 0x14};
 
@@ -161,6 +167,9 @@ float prev_speed;
 MPU6050 imu; // imu object called, appropriately, imu
 
 bool MOVING;
+
+const int GPS_BUFFER_LENGTH = 200;    // size of char array we'll use for
+char buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
 
 const int MOVE_BUTTON = 39;
 Button move_button(MOVE_BUTTON);
@@ -353,6 +362,15 @@ float get_angle(float x, float y)
   return atan2(y, x) * 57.2957795;
 }
 
+void displayAllGPS()
+{
+  while (gps.available())
+  {                                                      // If anything comes in Serial1 (pins 0 & 1)
+    gps.readBytesUntil('\n', buffer, GPS_BUFFER_LENGTH); // read it and send it out Serial (USB)
+    Serial.println(buffer);
+  }
+}
+
 // This is where we run the wifi server loop which is really slow
 void wifi_server_loop(void *parameter)
 {
@@ -360,47 +378,48 @@ void wifi_server_loop(void *parameter)
   {
     if (millis() - wifi_scan_timer > DT_WIFI)
     {
-      Serial.println("***DOING WIFI SCAN!\n");
-      int offset = sprintf(json_body, "%s", PREFIX);
-      // run a new scan. could also modify to use original scan from setup so quicker (though older info)
-      int n = WiFi.scanNetworks(); // This is SUPER slow
-      Serial.println("scan done");
-      if (n == 0)
-      {
-        Serial.println("no networks found");
-      }
-      else
-      {
-        int max_aps = max(min(MAX_APS, n), 1);
-        for (int i = 0; i < max_aps; ++i)
-        {                                                                                                                           // for each valid access point
-          uint8_t *mac = WiFi.BSSID(i);                                                                                             // get the MAC Address
-          offset += wifi_object_builder(json_body + offset, JSON_BODY_SIZE - offset, WiFi.channel(i), WiFi.RSSI(i), WiFi.BSSID(i)); // generate the query
-          if (i != max_aps - 1)
-          {
-            offset += sprintf(json_body + offset, ","); // add comma between entries except trailing.
-          }
-        }
-        sprintf(json_body + offset, "%s", SUFFIX);
-        // Serial.println(json_body);
-        int len = strlen(json_body);
-        // Make a HTTP request:
-        Serial.println("SENDING REQUEST");
-        request[0] = '\0'; // set 0th byte to null
-        offset = 0;        // reset offset variable for sprintf-ing
-        offset += sprintf(request + offset, "POST https://www.googleapis.com/geolocation/v1/geolocate?key=%s  HTTP/1.1\r\n", API_KEY);
-        offset += sprintf(request + offset, "Host: googleapis.com\r\n");
-        offset += sprintf(request + offset, "Content-Type: application/json\r\n");
-        offset += sprintf(request + offset, "cache-control: no-cache\r\n");
-        offset += sprintf(request + offset, "Content-Length: %d\r\n\r\n", len);
-        offset += sprintf(request + offset, "%s\r\n", json_body);
+      //   Serial.println("***DOING WIFI SCAN!\n");
+      //   int offset = sprintf(json_body, "%s", PREFIX);
+      //   // run a new scan. could also modify to use original scan from setup so quicker (though older info)
+      //   int n = WiFi.scanNetworks(); // This is SUPER slow
+      //   Serial.println("scan done");
+      //   if (n == 0)
+      //   {
+      //     Serial.println("no networks found");
+      //   }
+      //   else
+      //   {
+      //     int max_aps = max(min(MAX_APS, n), 1);
+      //     for (int i = 0; i < max_aps; ++i)
+      //     {                                                                                                                           // for each valid access point
+      //       uint8_t *mac = WiFi.BSSID(i);                                                                                             // get the MAC Address
+      //       offset += wifi_object_builder(json_body + offset, JSON_BODY_SIZE - offset, WiFi.channel(i), WiFi.RSSI(i), WiFi.BSSID(i)); // generate the query
+      //       if (i != max_aps - 1)
+      //       {
+      //         offset += sprintf(json_body + offset, ","); // add comma between entries except trailing.
+      //       }
+      //     }
+      //     sprintf(json_body + offset, "%s", SUFFIX);
+      //     // Serial.println(json_body);
+      //     int len = strlen(json_body);
+      //     // Make a HTTP request:
+      //     Serial.println("SENDING REQUEST");
+      //     request[0] = '\0'; // set 0th byte to null
+      //     offset = 0;        // reset offset variable for sprintf-ing
+      //     offset += sprintf(request + offset, "POST https://www.googleapis.com/geolocation/v1/geolocate?key=%s  HTTP/1.1\r\n", API_KEY);
+      //     offset += sprintf(request + offset, "Host: googleapis.com\r\n");
+      //     offset += sprintf(request + offset, "Content-Type: application/json\r\n");
+      //     offset += sprintf(request + offset, "cache-control: no-cache\r\n");
+      //     offset += sprintf(request + offset, "Content-Length: %d\r\n\r\n", len);
+      //     offset += sprintf(request + offset, "%s\r\n", json_body);
 
-        do_https_request(SERVER, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
-        Serial.println("-----------");
-        Serial.println(response);
-        Serial.println("-----------");
-        unpack_json(response);
-      }
+      //     do_https_request(SERVER, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
+      //     Serial.println("-----------");
+      //     Serial.println(response);
+      //     Serial.println("-----------");
+      //     unpack_json(response);
+      //   }
+      displayAllGPS();
     }
 
     body[0] = 0;
@@ -631,6 +650,9 @@ void setup()
 
   times_in_state = 10;
   prev_speed = 0;
+
+  // Using GPS instead of wifi
+  gps.begin(9600, SERIAL_8N1, GPS_TX_PIN, GPS_RX_PIN);
 
   // Set up tasks
   // Use pinned to core so that it'll be scheduled on the same core
