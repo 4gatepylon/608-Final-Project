@@ -320,16 +320,20 @@ class Crud(object):
         c.execute("""SELECT * FROM cam_data ORDER BY time_ ASC;""")
         data = c.fetchone()
         
-        image_decoded = base64.b64decode(data[1])
+        image_decoded = data[1]
+        image_decoded = base64.b64encode(image_decoded)
         image_decoded = image_decoded.decode('utf-8')
-        
+        cut_prefix = "dataimage/gifbase64"
+        cut_length = len(cut_prefix)
+        image_decoded = image_decoded[cut_length:]
+        add_prefix = "data:image/gif;base64,"
         return f"""
         <!DOCTYPE html>
         <html>
         <head>
         </head>
         <body>
-            <img src="data:image/png;base64,{image_decoded}">
+            <img src="{add_prefix}{image_decoded}">
         </body>
         </html>
         """
