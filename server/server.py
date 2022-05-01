@@ -1,3 +1,4 @@
+from email.mime import image
 import sqlite3
 from datetime import datetime
 import os
@@ -319,11 +320,19 @@ class Crud(object):
         c.execute("""SELECT * FROM cam_data ORDER BY time_ ASC;""")
         data = c.fetchone()
         
-        # decode the image
-        # image_decoded = base64.b64decode(data[1])
+        image_decoded = base64.b64decode(data[1])
+        image_decoded = image_decoded.decode('utf-8')
         
-        # return the image
-        return data[1]
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        </head>
+        <body>
+            <img src="data:image/png;base64,{image_decoded}">
+        </body>
+        </html>
+        """
         
 
 class Webpage(object):
