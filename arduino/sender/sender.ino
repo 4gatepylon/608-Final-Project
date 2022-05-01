@@ -32,8 +32,8 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
-#define GPS_TX_PIN 17
-#define GPS_RX_PIN 18
+#define GPS_TX_PIN 18
+#define GPS_RX_PIN 17
 
 enum button_state
 {
@@ -168,8 +168,8 @@ MPU6050 imu; // imu object called, appropriately, imu
 
 bool MOVING;
 
-const int GPS_BUFFER_LENGTH = 200;    // size of char array we'll use for
-char buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
+const int GPS_BUFFER_LENGTH = 200;        // size of char array we'll use for
+char gps_buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
 
 const int MOVE_BUTTON = 39;
 Button move_button(MOVE_BUTTON);
@@ -364,11 +364,14 @@ float get_angle(float x, float y)
 
 void displayAllGPS()
 {
-  while (gps.available())
-  {                                                      // If anything comes in Serial1 (pins 0 & 1)
-    gps.readBytesUntil('\n', buffer, GPS_BUFFER_LENGTH); // read it and send it out Serial (USB)
-    Serial.println(buffer);
+  Serial.println("******************** GPS ********************");
+  Serial.printf("GPS Avail: %d\n", gps.available());
+  while (1 || gps.available())
+  {                                                          // If anything comes in Serial1 (pins 0 & 1)
+    gps.readBytesUntil('\n', gps_buffer, GPS_BUFFER_LENGTH); // read it and send it out Serial (USB)
+    Serial.println(gps_buffer);
   }
+  Serial.println("****************** END GPS ******************\n");
 }
 
 // This is where we run the wifi server loop which is really slow
@@ -518,11 +521,11 @@ void other_things_loop(void *parameters)
       // do some error checking
       if (result == ESP_OK)
       {
-        Serial.println("Sent with success");
+        // Serial.println("Sent with success");
       }
       else
       {
-        Serial.println("Error sending the data");
+        // Serial.println("Error sending the data");
       }
       esp_now_timer = millis();
     }

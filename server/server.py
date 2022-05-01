@@ -326,6 +326,25 @@ class Webpage(object):
                 return html_file.read()
         else:
             return "Index not found"
+    
+    def handle_mona_lisa(request: Any):
+        png_bytes = None
+        with open('/var/jail/home/team10/mona_lisa.png', 'rb') as f:
+            png_bytes = f.read()
+        if png_bytes is None or len(png_bytes) == 0:
+            return "Error: no image"
+        base64bytes = base64.b64encode(png_bytes)
+        base64bytes = base64bytes.decode('utf-8')
+        return f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        </head>
+        <body>
+            <img src="data:image/png;base64,{base64bytes}">
+        </body>
+        </html>
+        """
 
 def request_handler(request: Any):
     if request['method'] == 'POST':
@@ -342,6 +361,8 @@ def request_handler(request: Any):
                 return Crud.handle_whereami(request)
             elif "wherehaveibeen" in request["values"]:
                 return Crud.handle_wherehaveibeen(request)
+            elif "monalisa" in request["values"]:
+                return Webpage.handle_mona_lisa(request)
             return Webpage.handle_webpage_get(request)
         else:
             return Crud.handle_db_api_get(request)

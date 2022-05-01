@@ -7,7 +7,7 @@
 // Every 10 s scan wifi to figure out lat and lon
 #define DT_ESP_NOW 80
 #define DT_SERVER 5000
-#define DT_WIFI 10000
+#define DT_WIFI 5000
 
 const int MAX_APS = 20;
 
@@ -20,8 +20,6 @@ enum Direction
     LEFT,
     RIGHT
 };
-
-
 
 const char PREFIX[] = "{\"wifiAccessPoints\": [";                 // beginning of json body
 const char SUFFIX[] = "]}";                                       // suffix to POST request
