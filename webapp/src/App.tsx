@@ -1,9 +1,8 @@
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import "./App.css";
-
 import {
   useDeepCompareMemoize,
   useDeepCompareEffectForMaps,
@@ -32,25 +31,24 @@ const App = () => {
   // use the Data from the server
   const rawData = useData();
 
-  // extract the lat, long, and timestamp from the data
-  let rawLocationLists = {
-    lat: rawData["x_x"],
-    lng: rawData["x_y"],
-  };
+  // setup the state for autorefresh
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
-  let locationList: Location[] = [];
+  const locationList: Location[] = useMemo(() => [], []);
 
-  for (let i = 0; i < rawLocationLists.lat.length; i++) {
-    locationList.push({
-      lat: rawLocationLists.lat[i],
-      lng: rawLocationLists.lng[i],
-    });
-  }
+  useMemo(() => {
+    for (let i = 0; i < rawData["x_y"].length; i++) {
+      locationList.push({
+        lat: rawData["x_x"][i],
+        lng: rawData["x_y"][i],
+      });
+    }
+  }, [locationList, rawData]);
 
   // now we set the center to the last location in the data
-  React.useEffect(() => {
+  useEffect(() => {
     const interval = setInterval(() => {
-      if (locationList.length > 0) {
+      if (locationList.length > 0 && autoRefresh) {
         setCenter({
           lat: locationList[locationList.length - 1].lat,
           lng: locationList[locationList.length - 1].lng,
@@ -59,7 +57,7 @@ const App = () => {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [locationList]);
+  }, [locationList, autoRefresh]);
 
   const onClick = (e: google.maps.MapMouseEvent) => {
     setClicks([...clicks, e.latLng!]);
@@ -129,7 +127,16 @@ const App = () => {
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
-      <Wrapper apiKey={apiKey} render={render}>
+      <div className="bg-white h-20 rounded-lg">
+        <img
+          src={
+            "data:image/gif;base64, R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAO"
+          }
+          className="object-contain"
+          alt={"camera output"}
+        />
+      </div>
+      {/* <Wrapper apiKey={apiKey} render={render}>
         <Map
           center={center}
           onClick={onClick}
@@ -145,7 +152,7 @@ const App = () => {
             <Marker key={i * 1000} position={location} />
           ))}
         </Map>
-      </Wrapper>
+      </Wrapper> */}
       {/* Basic form for controlling center and zoom of map. */}
       {/* {form} */}
     </div>
