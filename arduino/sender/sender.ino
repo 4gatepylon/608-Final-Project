@@ -32,8 +32,8 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
-#define GPS_TX_PIN 18
-#define GPS_RX_PIN 17
+// #define GPS_TX_PIN 18
+// #define GPS_RX_PIN 17
 
 enum button_state
 {
@@ -151,7 +151,7 @@ int Button::update()
 TFT_eSPI tft = TFT_eSPI(); // Invoke library, pins defined in User_Setup.h
 
 // Let me know where I ammm
-HardwareSerial gps(2);
+// HardwareSerial gps(2);
 
 // This is the peer's address
 uint8_t broadcastAddress[] = {0x7C, 0xDF, 0xA1, 0x15, 0x3A, 0x14};
@@ -168,8 +168,8 @@ MPU6050 imu; // imu object called, appropriately, imu
 
 bool MOVING;
 
-const int GPS_BUFFER_LENGTH = 200;        // size of char array we'll use for
-char gps_buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
+// const int GPS_BUFFER_LENGTH = 200;        // size of char array we'll use for
+// char gps_buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
 
 const int MOVE_BUTTON = 39;
 Button move_button(MOVE_BUTTON);
@@ -362,17 +362,17 @@ float get_angle(float x, float y)
   return atan2(y, x) * 57.2957795;
 }
 
-void displayAllGPS()
-{
-  Serial.println("******************** GPS ********************");
-  Serial.printf("GPS Avail: %d\n", gps.available());
-  while (1 || gps.available())
-  {                                                          // If anything comes in Serial1 (pins 0 & 1)
-    gps.readBytesUntil('\n', gps_buffer, GPS_BUFFER_LENGTH); // read it and send it out Serial (USB)
-    Serial.println(gps_buffer);
-  }
-  Serial.println("****************** END GPS ******************\n");
-}
+// void displayAllGPS()
+// {
+//   // Serial.println("******************** GPS ********************");
+//   // Serial.printf("GPS Avail: %d\n", gps.available());
+//   while (gps.available())
+//   {                                                          // If anything comes in Serial1 (pins 0 & 1)
+//     gps.readBytesUntil('\n', gps_buffer, GPS_BUFFER_LENGTH); // read it and send it out Serial (USB)
+//     // Serial.println(gps_buffer);
+//   }
+//   // Serial.println("****************** END GPS ******************\n");
+// }
 
 // This is where we run the wifi server loop which is really slow
 void wifi_server_loop(void *parameter)
@@ -422,7 +422,7 @@ void wifi_server_loop(void *parameter)
       //     Serial.println("-----------");
       //     unpack_json(response);
       //   }
-      displayAllGPS();
+      // displayAllGPS();
     }
 
     body[0] = 0;
@@ -655,7 +655,7 @@ void setup()
   prev_speed = 0;
 
   // Using GPS instead of wifi
-  gps.begin(9600, SERIAL_8N1, GPS_TX_PIN, GPS_RX_PIN);
+  // gps.begin(9600, SERIAL_8N1, GPS_TX_PIN, GPS_RX_PIN);
 
   // Set up tasks
   // Use pinned to core so that it'll be scheduled on the same core

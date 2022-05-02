@@ -1,14 +1,11 @@
 import * as React from "react";
 import * as ReactDom from "react-dom";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import "./App.css";
-import {
-  useDeepCompareMemoize,
-  useDeepCompareEffectForMaps,
-} from "./utils/MapUtils";
 import { Map, Marker, Polyline } from "./components/Map";
-import { useData, ServerData, RobotPlots } from "./components/RobotPlots";
+import { useData } from "./components/RobotPlots";
+import { NavBar } from "./components/NavBar";
 
 console.log(process.env);
 
@@ -84,8 +81,10 @@ const App = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100%" }}>
-      {/* <div className="bg-white h-20 rounded-lg">
+    <div>
+      <NavBar />
+      <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
+        {/* <div className="bg-white h-20 rounded-lg">
         <img
           src={
             "data:image/gif;base64, R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
@@ -94,32 +93,33 @@ const App = () => {
           alt={"camera output"}
         />
       </div> */}
-      <Wrapper apiKey={apiKey} render={render}>
-        <Map
-          center={center}
-          onClick={onClick}
-          onIdle={onIdle}
-          zoom={zoom}
-          style={{ flexGrow: "1", height: "100%" }}
-        >
-          {clicks.map((latLng, i) => (
-            <Marker key={i} position={latLng} />
-          ))}
+        <Wrapper apiKey={apiKey} render={render}>
+          <Map
+            center={center}
+            onClick={onClick}
+            onIdle={onIdle}
+            zoom={zoom}
+            style={{ flexGrow: "1", height: "100%" }}
+          >
+            {clicks.map((latLng, i) => (
+              <Marker key={i} position={latLng} />
+            ))}
 
-          {locationList.map((location, i) => (
-            <Marker key={i * 1000} position={location} />
-          ))}
-          <Polyline
-            path={locationList}
-            geodesic={true}
-            strokeColor="#FF0000"
-            strokeOpacity={1.0}
-            strokeWeight={2}
-          />
-        </Map>
-      </Wrapper>
-      {/* Basic form for controlling center and zoom of map. */}
-      {/* {form} */}
+            {locationList.map((location, i) => (
+              <Marker key={i * 1000} position={location} />
+            ))}
+            <Polyline
+              path={locationList}
+              geodesic={true}
+              strokeColor="#FF0000"
+              strokeOpacity={1.0}
+              strokeWeight={2}
+            />
+          </Map>
+        </Wrapper>
+        {/* Basic form for controlling center and zoom of map. */}
+        {/* {form} */}
+      </div>
     </div>
   );
 };
