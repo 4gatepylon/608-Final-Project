@@ -6,8 +6,8 @@ inline void a3_to_a4(unsigned char * a4, unsigned char * a3);
 inline void a4_to_a3(unsigned char * a3, unsigned char * a4);
 inline unsigned char b64_lookup(char c);
 
-const uint16_t IN_BUFFER_SIZE = 5672;  // size of buffer to hold HTTP request
-const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
+//const uint16_t IN_BUFFER_SIZE = 5672;  // size of buffer to hold HTTP request
+//const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
 
 int base64_encode(char *output, char *input, int inputLen) {
   int i = 0, j = 0;

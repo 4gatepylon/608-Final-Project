@@ -18,7 +18,7 @@
 #include "/YourFullPathHere/608-Final-Project/arduino/lib.h"
 #endif
 
-#ifdef LIB_PATH_NATASHA
+#ifdef LIB_PATH_NATASHA 
 #include "/Users/natashammaniar/Documents/608-Final-Project/arduino/lib.h"
 #endif
 
@@ -36,8 +36,8 @@ int motor1Pin2 = 39;
 int motor2Pin1 = 40;
 int motor2Pin2 = 41;
 
-int enable1Pin = 37;
-int enable2Pin = 42;
+int enable1Pin = 42;
+int enable2Pin = 33;
 
 int motorSpeedA = 0;
 int motorSpeedB = 0;
@@ -53,13 +53,11 @@ MOVE BASED ON DIRECTION
 */
 void moveCar(uint8_t direction, uint8_t speed)
 {
-  // NOTE we need to flip one of the two speeds in the case of forward/backwards
-  // to account for the fact that one motor is flipped (mirroring the other).
   if (direction == DOWN)
   {
 
     motorSpeedA = speed;
-    motorSpeedB = -speed;
+    motorSpeedB = speed;
     analogWrite(enable1Pin, motorSpeedA);
     analogWrite(enable2Pin, motorSpeedB);
     moveBack();
@@ -67,7 +65,7 @@ void moveCar(uint8_t direction, uint8_t speed)
   if (direction == UP)
   {
 
-    motorSpeedA = -speed;
+    motorSpeedA = speed;
     motorSpeedB = speed;
     analogWrite(enable1Pin, motorSpeedA);
     analogWrite(enable2Pin, motorSpeedB);
@@ -101,13 +99,12 @@ void moveCar(uint8_t direction, uint8_t speed)
     digitalWrite(motor2Pin2, LOW);
   }
 
-  if (direction == NONE)
-  {
+  if (direction == NONE) {
     digitalWrite(motor1Pin1, LOW);
     digitalWrite(motor1Pin2, LOW);
     digitalWrite(motor2Pin1, LOW);
     digitalWrite(motor2Pin2, LOW);
-  }
+  }  
 
   if (motorSpeedA < 0)
   {
@@ -161,7 +158,7 @@ void setup()
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
-
+  
   // Set device as a Wi-Fi Station (NOT A ACCESS POINT)
   WiFi.mode(WIFI_STA);
 
@@ -173,12 +170,12 @@ void setup()
   }
 
   // Once ESPNow is successfully Init, we will register for recv CB to
-  // get recv packer info
+  // get recv packer info 
   esp_now_register_recv_cb(OnDataRecv);
 
   // Unclear whether this will work (it's from class code, but we are a wifi station, so...)
   // https://randomnerdtutorials.com/esp32-useful-wi-fi-functions-arduino/
-
+  
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
   if (n == 0)
@@ -222,22 +219,24 @@ void setup()
     Serial.println(WiFi.localIP().toString() + " (" + WiFi.macAddress() + ") (" + WiFi.SSID() + ")");
     delay(500);
   }
-  else
+  else 
   { // if we failed to connect just Try again.
     Serial.println("Failed to Connect :/  Going to restart");
     Serial.println(WiFi.status());
     ESP.restart(); // restart the ESP (proper way)
   }
+  
 }
+
 
 void loop()
 {
   // TODO use google api to get the lat and long and our labwork to get the location on the map
   /*
-   */
+  */
   esp_now_register_recv_cb(OnDataRecv);
   moveCar(info.direction, info.speed);
-
+  
   // Wait number of unit time per frame: might want to change this on the reciever side
   while (millis() - primary_timer < DT)
     ;

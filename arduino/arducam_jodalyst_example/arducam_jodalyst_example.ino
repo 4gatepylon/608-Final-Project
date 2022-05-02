@@ -23,6 +23,7 @@
 #include <SPI.h>
 #include "memorysaver.h"
 #include "camera_support.h"
+#include <Arduino.h>
 
 #if !(defined ESP32 )
 #error Please select the ArduCAM ESP32 UNO board in the Tools/Board
@@ -42,6 +43,7 @@ char response_buffer2[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP respons
 const int RESPONSE_TIMEOUT = 6000;     // ms to wait for response from host
 
 const int CAM_POWER_ON = 10;
+int id;
 
 #if defined (OV2640_MINI_2MP) || defined (OV2640_CAM)
   ArduCAM myCAM(OV2640, CS);
@@ -71,6 +73,8 @@ uint8_t temp = 0, temp_last = 0;
 int i = 0;
 bool is_header = false;
 char body[9000]; 
+char part_body[2500]; 
+char part[2000];
 
 //ESP32WebServer server(80);
 WiFiClient client; //global WiFiClient Secure object 
@@ -152,23 +156,19 @@ void camCapture(ArduCAM myCAM) {
   // POST request 
   body[0] =0;
   sprintf(
-      body, "{\'fullimg\'=%s}", holder);
-  
-
-
-  int body_len = strlen(body); // calculate body length (for header reporting)
-  Serial.println(body_len);
-  sprintf(request_buffer2, "POST http://608dev-2.net/sandbox/sc/team10/server.py HTTP/1.1\r\n");
+      body, "{\"fullimg\":\"data:image/gif;base64,%s\"}", &holder[0]);
+  int body_len = strlen(body); 
+  sprintf(request_buffer2, "POST http://608dev-2.net/sandbox/sc/team10/server.py?camera=1 HTTP/1.1\r\n");
   strcat(request_buffer2, "Host: 608dev-2.net\r\n");
   strcat(request_buffer2, "Content-Type: application/json\r\n");
   sprintf(request_buffer2 + strlen(request_buffer2), "Content-Length: %d\r\n", body_len); // append string formatted to end of request buffer
   strcat(request_buffer2, "\r\n");                                                       // new line from header to body
-  Serial.println("HII");
   strcat(request_buffer2, body);                                                         // body
   strcat(request_buffer2, "\r\n");                                                       // new line
   Serial.println(request_buffer2); 
   do_http_request("608dev-2.net", request_buffer2, response_buffer2, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
   Serial.println(response_buffer2);
+  
   //server.sendContent(response);
   // decode base 64 (load html from base64 --)
 
@@ -302,9 +302,27 @@ uint8_t vid, pid;
 char network[] = "EECS_Labs";
 char password[] = "";
 
+void logMemory() {
+  log_d("Used PSRAM: %d", ESP.getPsramSize() - ESP.getFreePsram());
+}
+
+
 void setup() {
 
   //PRINT OUT WIFI NETWORKS NEARBY
+  /*
+  log_d("Total heap: %d", ESP.getHeapSize());
+  log_d("Free heap: %d", ESP.getFreeHeap());
+  log_d("Total PSRAM: %d", ESP.getPsramSize());
+  log_d("Free PSRAM: %d", ESP.getFreePsram());
+
+  logMemory();
+  byte* psdRamBuffer = (byte*)ps_malloc(500000);
+  logMemory();
+  free(psdRamBuffer);
+  logMemory();
+  */
+  
   int n = WiFi.scanNetworks();
   Serial.println("scan done");
   if (n == 0) {
@@ -417,10 +435,28 @@ Serial.println(F("OV5642 detected."));
 
 
 //Change to JPEG capture mode and initialize the OV2640 module
+myCAM.set_format(JPEG); 
+myCAM.InitCAM();
+#if defined (OV2640_MINI_2MP) || defined (OV2640_CAM)
+myCAM.OV2640_set_JPEG_size(OV2640_160x120);
+#elif defined (OV5642_MINI_5MP_PLUS) || defined (OV5642_MINI_5MP) || defined (OV5642_MINI_5MP_BIT_ROTATION_FIXED) ||(defined (OV5642_CAM))
+//Check if the camera module type is OV5642
+myCAM.wrSensorReg16_8(0xff, 0x01);
+myCAM.rdSensorReg16_8(OV5642_CHIPID_HIGH, &vid);
+myCAM.rdSensorReg16_8(OV5642_CHIPID_LOW, &pid);
+if((vid != 0x56) || (pid != 0x42)){
+Serial.println(F("Can't find OV5642 module!"));
+}
+else
+Serial.println(F("OV5642 detected."));
+#endif
+
+
+//Change to JPEG capture mode and initialize the OV2640 module
 myCAM.set_format(JPEG);
 myCAM.InitCAM();
 #if defined (OV2640_MINI_2MP) || defined (OV2640_CAM)
-myCAM.OV2640_set_JPEG_size(OV2640_320x240);
+myCAM.OV2640_set_JPEG_size(OV2640_160x120);
 #elif defined (OV5640_MINI_5MP_PLUS) || defined (OV5640_CAM)
 myCAM.write_reg(ARDUCHIP_TIM, VSYNC_LEVEL_MASK);   //VSYNC is active HIGH
 myCAM.OV5640_set_JPEG_size(OV5640_320x240);
