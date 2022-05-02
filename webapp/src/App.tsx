@@ -34,30 +34,35 @@ const App = () => {
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  const locationList: Location[] = useMemo(() => [], []);
+  // const locationList: Location[] = useMemo(() => [], []);
 
-  useMemo(() => {
-    for (let i = 0; i < rawData["x_y"].length; i++) {
-      locationList.push({
-        lat: rawData["x_x"][i],
-        lng: rawData["x_y"][i],
-      });
-    }
-  }, [locationList, rawData]);
+  // useMemo(() => {
+  //   const dataLength = rawData["x_y"].length;
+  //   for (let i = 0; i < 3; i++) {
+  //     locationList.push({
+  //       lat: rawData["x_x"][i],
+  //       lng: rawData["x_y"][i],
+  //     });
+  //   }
+  //   console.log(locationList);
+  // }, [locationList, rawData]);
 
-  // now we set the center to the last location in the data
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (locationList.length > 0 && autoRefresh) {
-        setCenter({
-          lat: locationList[locationList.length - 1].lat,
-          lng: locationList[locationList.length - 1].lng,
-        });
-        setZoom(25);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [locationList, autoRefresh]);
+  const locationList = rawData;
+  console.log(locationList);
+
+  // // now we set the center to the last location in the data
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (locationList.length > 0 && autoRefresh) {
+  //       setCenter({
+  //         lat: locationList[locationList.length - 1].lat,
+  //         lng: locationList[locationList.length - 1].lng,
+  //       });
+  //       setZoom(25);
+  //     }
+  //   }, 100000000);
+  //   return () => clearInterval(interval);
+  // }, [locationList, autoRefresh]);
 
   const onClick = (e: google.maps.MapMouseEvent) => {
     setClicks([...clicks, e.latLng!]);
@@ -68,53 +73,6 @@ const App = () => {
     setZoom(m.getZoom()!);
     setCenter(m.getCenter()!.toJSON());
   };
-  console.log(locationList);
-  const form = (
-    <div
-      style={{
-        padding: "1rem",
-        flexBasis: "250px",
-        height: "100%",
-        overflow: "auto",
-      }}
-    >
-      <label htmlFor="zoom">Zoom</label>
-      <input
-        type="number"
-        id="zoom"
-        name="zoom"
-        value={zoom}
-        onChange={(event) => setZoom(Number(event.target.value))}
-      />
-      <br />
-      <label htmlFor="lat">Latitude</label>
-      <input
-        type="number"
-        id="lat"
-        name="lat"
-        value={center.lat}
-        onChange={(event) =>
-          setCenter({ ...center, lat: Number(event.target.value) })
-        }
-      />
-      <br />
-      <label htmlFor="lng">Longitude</label>
-      <input
-        type="number"
-        id="lng"
-        name="lng"
-        value={center.lng}
-        onChange={(event) =>
-          setCenter({ ...center, lng: Number(event.target.value) })
-        }
-      />
-      <h3>{clicks.length === 0 ? "Click on map to add markers" : "Clicks"}</h3>
-      {clicks.map((latLng, i) => (
-        <pre key={i}>{JSON.stringify(latLng.toJSON(), null, 2)}</pre>
-      ))}
-      <button onClick={() => setClicks([])}>Clear</button>
-    </div>
-  );
 
   const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
