@@ -55,7 +55,12 @@ const uint16_t IN_BUFFER_SIZE = 3500;  // size of buffer to hold HTTP request
 const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
 const uint16_t JSON_BODY_SIZE = 3000;
 
+// #define IN_LAB
+#ifdef IN_LAB
 char network[] = "EECS_Labs";
+#else
+char network[] = "MIT GUEST";
+#endif
 char password[] = "";
 const char user[] = "";
 char request_buffer[IN_BUFFER_SIZE];   // char array buffer to hold HTTP request
