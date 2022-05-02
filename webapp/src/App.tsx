@@ -7,7 +7,7 @@ import {
   useDeepCompareMemoize,
   useDeepCompareEffectForMaps,
 } from "./utils/MapUtils";
-import { Map, Marker } from "./components/Map";
+import { Map, Marker, Polyline } from "./components/Map";
 import { useData, ServerData, RobotPlots } from "./components/RobotPlots";
 
 console.log(process.env);
@@ -68,7 +68,7 @@ const App = () => {
     setZoom(m.getZoom()!);
     setCenter(m.getCenter()!.toJSON());
   };
-
+  console.log(locationList);
   const form = (
     <div
       style={{
@@ -127,16 +127,16 @@ const App = () => {
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
-      <div className="bg-white h-20 rounded-lg">
+      {/* <div className="bg-white h-20 rounded-lg">
         <img
           src={
-            "data:image/gif;base64, R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAO"
+            "data:image/gif;base64, R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
           }
           className="object-contain"
           alt={"camera output"}
         />
-      </div>
-      {/* <Wrapper apiKey={apiKey} render={render}>
+      </div> */}
+      <Wrapper apiKey={apiKey} render={render}>
         <Map
           center={center}
           onClick={onClick}
@@ -151,8 +151,15 @@ const App = () => {
           {locationList.map((location, i) => (
             <Marker key={i * 1000} position={location} />
           ))}
+          <Polyline
+            path={locationList}
+            geodesic={true}
+            strokeColor="#FF0000"
+            strokeOpacity={1.0}
+            strokeWeight={2}
+          />
         </Map>
-      </Wrapper> */}
+      </Wrapper>
       {/* Basic form for controlling center and zoom of map. */}
       {/* {form} */}
     </div>
