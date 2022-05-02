@@ -34,7 +34,26 @@ export function useData() {
     );
     let body: string = await response.text();
     let data: ServerData = JSON.parse(body);
+    console.log(data);
     setData(data);
+  }
+
+  type Coord = {
+    lat: number;
+    lng: number;
+  };
+
+  function formatData(data: ServerData) {
+    const result: Array<Coord> = [];
+    const dataLength = data["x_y"].length;
+    let maxLocs = 3;
+    for (let i = dataLength - 1; i > dataLength - maxLocs - 1; i = i - 1) {
+      result.push({
+        lat: data["x_x"][i],
+        lng: data["x_y"][i],
+      });
+    }
+    return result;
   }
 
   React.useEffect(() => {
@@ -44,7 +63,7 @@ export function useData() {
     return () => clearInterval(interval);
   });
 
-  return data;
+  return formatData(data);
 }
 
 export function RobotPlots(data: ServerData) {
