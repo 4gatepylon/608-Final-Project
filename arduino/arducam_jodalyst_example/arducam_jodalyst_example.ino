@@ -156,8 +156,9 @@ void camCapture(ArduCAM myCAM) {
   // POST request 
   body[0] =0;
   sprintf(
-      body, "{\"fullimg\":\"data:image/gif;base64,%s\"}", &holder[0]);
+      body, "{\"fullimg\":\"data:image/gif;base64,%s\"}", &holder[1]);
   int body_len = strlen(body); 
+  Serial.println(body);
   sprintf(request_buffer2, "POST http://608dev-2.net/sandbox/sc/team10/server.py?camera=1 HTTP/1.1\r\n");
   strcat(request_buffer2, "Host: 608dev-2.net\r\n");
   strcat(request_buffer2, "Content-Type: application/json\r\n");
@@ -165,9 +166,9 @@ void camCapture(ArduCAM myCAM) {
   strcat(request_buffer2, "\r\n");                                                       // new line from header to body
   strcat(request_buffer2, body);                                                         // body
   strcat(request_buffer2, "\r\n");                                                       // new line
-  Serial.println(request_buffer2); 
+  //Serial.println(request_buffer2); 
   do_http_request("608dev-2.net", request_buffer2, response_buffer2, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
-  Serial.println(response_buffer2);
+  //Serial.println(response_buffer2);
   
   //server.sendContent(response);
   // decode base 64 (load html from base64 --)
@@ -299,7 +300,7 @@ Serial.println("QL change to: " + server.arg("ql"));
 }
 */
 uint8_t vid, pid;
-char network[] = "EECS_Labs";
+char network[] = "MIT GUEST";
 char password[] = "";
 
 void logMemory() {

@@ -306,12 +306,13 @@ class Crud(object):
     def handle_camera_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         now = datetime.now() 
         json_camera = json.loads(request['data']) 
-        image_decoded= base64.b64decode(json_camera['fullimg']) 
         c.execute("""CREATE TABLE IF NOT EXISTS cam_data (time_ timestamp, image text);""")
-        c.execute('''INSERT into cam_data VALUES (?,?);''', (now, image_decoded))
-        filename = '/var/jail/home/team10/build/camera.jpg'  # I assume you have a way of picking unique filenames
-        with open(filename, 'wb') as f: 
-            f.write(image_decoded) # gets upddated everytime 
+        c.execute('''DELETE FROM cam_data''')
+        c.execute('''INSERT into cam_data VALUES (?,?);''', (now, json_camera['fullimg']))
+        image_decoded= base64.b64decode(json_camera['fullimg']) 
+        #filename = '/var/jail/home/team10/build/camera.jpg'  # I assume you have a way of picking unique filenames
+        #with open(filename, 'wb') as f: 
+            #f.write(image_decoded) # gets upddated everytime 
         return image_decoded 
     
     # get the image from the cam_data database. Send back the most recent image
