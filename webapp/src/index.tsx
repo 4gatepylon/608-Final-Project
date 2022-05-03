@@ -12,13 +12,6 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    {/* <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="camera" element={<Camera />} />
-        <Route path="*" element={<div>Not found</div>} />
-      </Routes>
-    </BrowserRouter> */}
     <App />
   </React.StrictMode>
 );

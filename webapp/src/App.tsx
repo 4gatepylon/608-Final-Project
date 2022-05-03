@@ -31,35 +31,8 @@ const App = () => {
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  // const locationList: Location[] = useMemo(() => [], []);
-
-  // useMemo(() => {
-  //   const dataLength = rawData["x_y"].length;
-  //   for (let i = 0; i < 3; i++) {
-  //     locationList.push({
-  //       lat: rawData["x_x"][i],
-  //       lng: rawData["x_y"][i],
-  //     });
-  //   }
-  //   console.log(locationList);
-  // }, [locationList, rawData]);
-
   const locationList = rawData;
-  console.log(locationList);
-
-  // // now we set the center to the last location in the data
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (locationList.length > 0 && autoRefresh) {
-  //       setCenter({
-  //         lat: locationList[locationList.length - 1].lat,
-  //         lng: locationList[locationList.length - 1].lng,
-  //       });
-  //       setZoom(25);
-  //     }
-  //   }, 100000000);
-  //   return () => clearInterval(interval);
-  // }, [locationList, autoRefresh]);
+  // console.log(locationList);
 
   const onClick = (e: google.maps.MapMouseEvent) => {
     setClicks([...clicks, e.latLng!]);
@@ -93,7 +66,7 @@ const App = () => {
           alt={"camera output"}
         />
       </div> */}
-        {/* <Wrapper apiKey={apiKey} render={render}>
+        <Wrapper apiKey={apiKey} render={render}>
           <Map
             center={center}
             onClick={onClick}
@@ -116,13 +89,13 @@ const App = () => {
               strokeWeight={2}
             />
           </Map>
-        </Wrapper> */}
+        </Wrapper>
         {/* Basic form for controlling center and zoom of map. */}
         {/* {form} */}
       </div>
     </div>
   );
-};
+};;;;
 
 window.addEventListener("DOMContentLoaded", () => {
   ReactDom.render(<App />, document.getElementById("root"));
