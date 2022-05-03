@@ -93,7 +93,7 @@ const App = () => {
           alt={"camera output"}
         />
       </div> */}
-        <Wrapper apiKey={apiKey} render={render}>
+        {/* <Wrapper apiKey={apiKey} render={render}>
           <Map
             center={center}
             onClick={onClick}
@@ -116,7 +116,7 @@ const App = () => {
               strokeWeight={2}
             />
           </Map>
-        </Wrapper>
+        </Wrapper> */}
         {/* Basic form for controlling center and zoom of map. */}
         {/* {form} */}
       </div>
