@@ -83,10 +83,10 @@ int motorSpeedA = 0;
 int motorSpeedB = 0;
 
 const int CS = 34;
-uint32_t primary_timer; // main loop timer
-char request_buffer2[IN_BUFFER_SIZE]; //char array buffer to hold HTTP request
-char response_buffer2[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP response
-const int RESPONSE_TIMEOUT = 6000;     // ms to wait for response from host
+//uint32_t primary_timer; // main loop timer
+//char request_buffer2[IN_BUFFER_SIZE]; //char array buffer to hold HTTP request
+//char response_buffer2[OUT_BUFFER_SIZE]; //char array buffer to hold HTTP response
+//const int RESPONSE_TIMEOUT = 6000;     // ms to wait for response from host
 
 const int CAM_POWER_ON = 10;
 int id;
@@ -300,16 +300,16 @@ void camCapture(ArduCAM myCAM) {
       body, "{\"fullimg\":\"data:image/gif;base64,%s\"}", &holder[0]);
   int body_len = strlen(body); 
   Serial.println(body);
-  sprintf(request_buffer2, "POST http://608dev-2.net/sandbox/sc/team10/server.py?camera=1 HTTP/1.1\r\n");
-  strcat(request_buffer2, "Host: 608dev-2.net\r\n");
-  strcat(request_buffer2, "Content-Type: application/json\r\n");
-  sprintf(request_buffer2 + strlen(request_buffer2), "Content-Length: %d\r\n", body_len); // append string formatted to end of request buffer
-  strcat(request_buffer2, "\r\n");                                                       // new line from header to body
-  strcat(request_buffer2, body);                                                         // body
-  strcat(request_buffer2, "\r\n");                                                       // new line
+  sprintf(request_buffer, "POST http://608dev-2.net/sandbox/sc/team10/server.py?camera=1 HTTP/1.1\r\n");
+  strcat(request_buffer, "Host: 608dev-2.net\r\n");
+  strcat(request_buffer, "Content-Type: application/json\r\n");
+  sprintf(request_buffer + strlen(request_buffer), "Content-Length: %d\r\n", body_len); // append string formatted to end of request buffer
+  strcat(request_buffer, "\r\n");                                                       // new line from header to body
+  strcat(request_buffer, body);                                                         // body
+  strcat(request_buffer, "\r\n");                                                       // new line
   //Serial.println(request_buffer2); 
-  do_http_request("608dev-2.net", request_buffer2, response_buffer2, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
-  Serial.println(response_buffer2);
+  do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
+  Serial.println(response_buffer);
   
   //server.sendContent(response);
   // decode base 64 (load html from base64 --)
@@ -441,8 +441,8 @@ Serial.println("QL change to: " + server.arg("ql"));
 }
 */
 uint8_t vid, pid;
-char network[] = "MIT GUEST";
-char password[] = "";
+//char network[] = "MIT GUEST";
+//char password[] = "";
 
 void logMemory() {
   log_d("Used PSRAM: %d", ESP.getPsramSize() - ESP.getFreePsram());
@@ -700,7 +700,7 @@ void loop() {
     esp_now_register_recv_cb(OnDataRecv);
     moveCar(info.direction, info.speed);
     
-    
+
   }
 
 
