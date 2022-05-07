@@ -4,10 +4,17 @@ from datetime import datetime
 import os
 import json
 import base64
+import requests
+import os
 
 from typing import Callable, List, Tuple, Any
 
 directory = '/var/jail/home/'
+
+API_KEY = "AIzaSyBllku4kCJWbkSc0LuhKZxskgsG_g1YcGU"
+
+#API_KEY = json.dumps(API_KEY)
+
 HTML_HEADER: str = """
 <!DOCTYPE html>
 <html>
@@ -46,10 +53,52 @@ HTML_HEADER: str = """
 
 HTML_FOOTER: str = "</table></body></html>"
 
+
+
+
 def LOCATIONS_HTML(timestamped_locations):
     # Have to reverse because we add from top to bottom and want newest first
     entries = "".join(reversed([f"<tr><td>{name}</td><td>{time}</td></tr>" for time, name in timestamped_locations]))
     return HTML_HEADER + entries + HTML_FOOTER
+
+'''
+def detect_labels(path):
+    """Detects labels in the file."""
+
+    
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.Image(content=content)
+
+    response = client.label_detection(image=image)
+
+    objects = client.object_localization(
+        image=image).localized_object_annotations
+    objects.keys 
+
+    print('Number of objects found: {}'.format(len(objects)))
+    for object_ in objects:
+        print('\n{} (confidence: {})'.format(object_.name, object_.score))
+        print('Normalized bounding polygon vertices: ')
+        for vertex in object_.bounding_poly.normalized_vertices:
+            print(' - ({}, {})'.format(vertex.x, vertex.y))
+    # see if object right in front 
+
+    labels = response.label_annotations
+
+    return labels
+
+    if response.error.message:
+        raise Exception(
+            '{}\nFor more info on error messages, check: '
+            'https://cloud.google.com/apis/design/errors'.format(
+                response.error.message))
+
+    # provides labels of images 
+'''
 
 class GeoFencer(object):
     MIT_LOCATIONS = {
@@ -197,7 +246,7 @@ class GeoFencer(object):
 
 class Crud(object):
     DB_FILE = "/var/jail/home/team10/information.db" 
-    CAM_FILE = "/var/jail/home/team10/cam.db" 
+    CAM_FILE = "/var/jail/home/team10/camera.db" 
 
     def __init__(self):
         pass
@@ -306,14 +355,42 @@ class Crud(object):
     def handle_camera_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         now = datetime.now() 
         json_camera = json.loads(request['data']) 
-        c.execute("""CREATE TABLE IF NOT EXISTS cam_data (time_ timestamp, image text);""")
-        c.execute('''DELETE FROM cam_data''')
-        c.execute('''INSERT into cam_data VALUES (?,?);''', (now, json_camera['fullimg']))
-        image_decoded= base64.b64decode(json_camera['fullimg']) 
-        #filename = '/var/jail/home/team10/build/camera.jpg'  # I assume you have a way of picking unique filenames
+        
+        coded_string =  json_camera['fullimg'].split("=")[0].split("data:image/gif;base64,")[1] #+ "=="
+        #byte_string = coded_string.encode()
+        #filename = '/var/jail/home/team10/cam.jpeg'  # I assume you have a way of picking unique filenames
         #with open(filename, 'wb') as f: 
-            #f.write(image_decoded) # gets upddated everytime 
-        return image_decoded 
+            #f.write(base64.decodebytes(byte_string)) # gets upddated everytime 
+            #f.close()
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "var/jail/home/team10/key.json" 
+        request_dict = {
+            "requests":[
+                {
+                "image":{
+                    "content":coded_string
+                },
+                "features":[
+                    {
+                    "type":"OBJECT_LOCALIZATION",
+                    "maxResults":3
+                    }
+                ]
+                }
+            ]
+            } 
+        # parse response 
+        response = requests.post(
+            url='https://vision.googleapis.com/v1/images:annotate?key={}'.format(API_KEY),
+            data=json.dumps(request_dict), 
+            headers={'Content-Type': 'application/json'}
+        ).json()['responses'][0]['localizedObjectAnnotations'][0]['name']
+        # send this to database 
+        # send to sender tft? 
+        # sent to tft 
+        c.execute("""CREATE TABLE IF NOT EXISTS cam_data (time_ timestamp, image text, response text);""")
+        c.execute('''DELETE FROM cam_data''')
+        c.execute('''INSERT into cam_data VALUES (?,?,?);''', (now, json_camera['fullimg'],response))
+        return response 
     
     # get the image from the cam_data database. Send back the most recent image
     @withConnCamCursor
@@ -323,18 +400,25 @@ class Crud(object):
         
         # NOTE image decoded is already decoded
         image_decoded = data[1]
+        object_detected = data[2] 
         # remove the last //9k=UBcbimsKAExTSKQj/9k=2Q==
-        image_decoded = image_decoded.split("//")[0]
-        return f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-        </head>
-        <body> 
-            <img src="{image_decoded}">
-        </body>
-        </html>
-        """
+        image_decoded = image_decoded.split("=")[0] 
+        #return image_decoded
+        if request['values']['camera']=='1':
+            return f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+            </head>
+            <body> 
+                <img src="{image_decoded}">
+                <strong>{object_detected}</strong>
+            </body>
+            </html>
+            """
+        else:
+            return object_detected
+        # send through object detection and result 
         
 
 class Webpage(object):

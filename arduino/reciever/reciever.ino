@@ -160,7 +160,7 @@ void setup()
   pinMode(enable2Pin, OUTPUT);
   
   // Set device as a Wi-Fi Station (NOT A ACCESS POINT)
-  WiFi.mode(WIFI_STA);
+  WiFi.mode(WIFI_STA); 
 
   // Init ESP-NOW
   if (esp_now_init() != ESP_OK)

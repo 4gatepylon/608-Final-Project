@@ -682,5 +682,14 @@ void setup()
 
 void loop()
 {
+  sprintf(request_buffer,"GET http://608dev-2.net/sandbox/sc/team10/server.py?camera=2 HTTP/1.1\r\n");
+  strcat(request_buffer,"Host: 608dev-2.net\r\n");
+  strcat(request_buffer,"\r\n"); //new line 
+  do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT,true);
+  Serial.println("RESPONSE BUFFER"); //viewable in Serial Terminal
+  //Serial.println(response_buffer); 
+  tft.setCursor(0,10,4);
+  tft.println(response_buffer);
+  // sender gets from server 
   delay(1);
 }
