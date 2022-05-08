@@ -388,14 +388,14 @@ class Crud(object):
         # send to sender tft? 
         # sent to tft 
         c.execute("""CREATE TABLE IF NOT EXISTS cam_data (time_ timestamp, image text, response text);""")
-        c.execute('''DELETE FROM cam_data''')
+        #c.execute('''DELETE FROM cam_data''')
         c.execute('''INSERT into cam_data VALUES (?,?,?);''', (now, json_camera['fullimg'],response))
         return response 
     
     # get the image from the cam_data database. Send back the most recent image
     @withConnCamCursor
     def handle_camera_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
-        c.execute("""SELECT * FROM cam_data ORDER BY time_ ASC;""")
+        c.execute("""SELECT * FROM cam_data ORDER BY time_ DESC;""") 
         data = c.fetchone()
         
         # NOTE image decoded is already decoded
