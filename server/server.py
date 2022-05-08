@@ -404,18 +404,20 @@ class Crud(object):
         # remove the last //9k=UBcbimsKAExTSKQj/9k=2Q==
         image_decoded = image_decoded.split("=")[0] 
         #return image_decoded
+        # if request['values']['camera']=='1':
+        #     return f"""
+        #     <!DOCTYPE html>
+        #     <html>
+        #     <head>
+        #     </head>
+        #     <body> 
+        #         <img src="{image_decoded}">
+        #         <strong>{object_detected}</strong>
+        #     </body>
+        #     </html>
+        #     """
         if request['values']['camera']=='1':
-            return f"""
-            <!DOCTYPE html>
-            <html>
-            <head>
-            </head>
-            <body> 
-                <img src="{image_decoded}">
-                <strong>{object_detected}</strong>
-            </body>
-            </html>
-            """
+             return json.dumps({"image_decoded": image_decoded, "object": object_detected})
         else:
             return object_detected
         # send through object detection and result 
