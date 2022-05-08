@@ -31,6 +31,25 @@ const App = () => {
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
 
+  const [imgSrcList, setImgSrcList] = useState(["empty"]);
+
+  React.useEffect(() => {
+    async function getImgSrcList() {
+      const imgSrcResult = await fetch(
+        "https://608dev-2.net/sandbox/sc/team10/server.py?camera=1"
+      );
+      if (imgSrcResult) {
+        const jsonResult = await imgSrcResult.json();
+        const imgSrcString: string = jsonResult["image_decoded"];
+        const newImgSrcString = [imgSrcString, imgSrcString, imgSrcString];
+        setImgSrcList(newImgSrcString);
+      }
+
+      //setImgSrc(imgSrcResult);
+    }
+    getImgSrcList();
+  }, [imgSrcList]);
+
   const locationList = rawData;
   // console.log(locationList);
 
@@ -57,15 +76,13 @@ const App = () => {
     <div>
       <NavBar />
       <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
-        {/* <div className="bg-white h-20 rounded-lg">
-        <img
-          src={
-            "data:image/gif;base64, R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-          }
-          className="object-contain"
-          alt={"camera output"}
-        />
-      </div> */}
+        <div className="bg-white h-20 rounded-lg">
+          <img
+            src={imgSrcList[0]}
+            className="object-contain"
+            alt={"camera output"}
+          />
+        </div>
         <Wrapper apiKey={apiKey} render={render}>
           <Map
             center={center}
@@ -95,7 +112,7 @@ const App = () => {
       </div>
     </div>
   );
-};;;;
+};
 
 window.addEventListener("DOMContentLoaded", () => {
   ReactDom.render(<App />, document.getElementById("root"));
