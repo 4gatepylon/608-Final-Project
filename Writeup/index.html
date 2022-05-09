@@ -265,22 +265,12 @@ speeds (between 0 and 100 in a unit pre-determined by our motor driver). This is
 lab for the notes, except the function is in fact purely linear.
 
 ## ESP32 Robot (Driver and Sensor)
-Rover's code for the driver and sensor.
+Rover's code for the driver and sensor. TODO.
 
 ## ESP32 Robot (Wifi-Scanner/Locator)
-TODO
-
-## Server Side
-TODO
-
-### Frames Database
-TODO
-
-### IMU Reading
-TODO
-
-### Button and Force
-TODO
+The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON, and
+then send it to the Google API at `https://www.googleapis.com/geolocation/v1/geolocate` with the key provided to us in
+one of the labs. Once it is done with this, it sends a request to our backend to update our locations database.
 
 # Milestone Videos
 ## Week 1
