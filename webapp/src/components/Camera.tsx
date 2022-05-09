@@ -1,25 +1,64 @@
 import React from "react";
-import { ValuesAndNavBar } from "./NavBar";
 
 function Camera() {
-  const camera = (
-    <div className="bg-white h-20 rounded-lg">
-      <img
-        src={
-          "data:image/gif;base64,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"
-        }
-        className="object-contain"
-        alt={"camera output"}
-      />
+  const [imgSrcList, setImgSrcList] = React.useState(["empty"]);
 
-      <img
-        src="https://www.w3schools.com/images/w3schools_green.jpg"
-        alt="W3Schools.com"
-      />
+  React.useEffect(() => {
+    async function getImgSrcList() {
+      const imgSrcResult = await fetch(
+        "https://608dev-2.net/sandbox/sc/team10/server.py?camera=1"
+      );
+      if (imgSrcResult) {
+        const jsonResult = await imgSrcResult.json();
+        const imgSrcString: string = jsonResult["image_decoded"];
+        const newImgSrcString = [imgSrcString, imgSrcString, imgSrcString];
+        setImgSrcList(newImgSrcString);
+      }
+
+      //setImgSrc(imgSrcResult);
+    }
+    getImgSrcList();
+  }, [imgSrcList]);
+
+
+  const camera = (
+    <div className="relative ">
+      <div className="text-xl mb-5 mt-10 flex flex-row justify-center font-serif font-semibold text-cyan-800">
+        Live Feed from the camera!
+      </div>
+      <hr className="w-2/4 ml-auto mr-auto mb-16 text-black border-2 border-slate-800" />
+      <div className="relative flex flex-row justify-center ">
+        <div className="bg-white h-50 rounded-lg justify-center border-8 border-cyan-500">
+          <img
+            src={imgSrcList[0]}
+            className="object-contain h-full w-full"
+            alt={"camera output"}
+          />
+        </div>
+      </div>
+      {/* <hr className="w-3/4 ml-auto mr-auto mt-20 mb-1 text-black border-2 border-slate-800" />
+      <hr className="w-3/4 ml-auto mr-auto mb-16 text-black border-2 border-slate-800" />
+      <div className="text-xl mb-5 mt-10 flex flex-row justify-center font-serif font-semibold text-pink-600">
+        Previous images and locations
+      </div>
+      <hr className="w-2/4 ml-auto mr-auto mb-16 text-black border-2 border-slate-800" />
+      <div className="relative flex flex-col justify-center max-w-40">
+        {imgSrcList.map((imgSrc, index) => {
+          return (
+            <div className="bg-white h-50 rounded-lg justify-center border-8 border-pink-300 ml-auto mr-auto mb-16">
+              <img
+                src={imgSrc}
+                className="object-contain"
+                alt={"camera output"}
+              />
+            </div>
+          );
+        })}
+      </div> */}
     </div>
   );
 
-  return <div>{camera}</div>;
+  return <div className="flex flex-col h-screen bg-pink-100">{camera}</div>;
 }
 
 export default Camera;
