@@ -41,8 +41,6 @@ struct WireData
     Vec tilt;
     float angle;
     float speed;
-    float lat;
-    float lon;
     Direction direction;
 };
 
@@ -59,7 +57,7 @@ const uint16_t JSON_BODY_SIZE = 3000;
 #ifdef IN_LAB
 char network[] = "EECS_Labs";
 #else
-char network[] = "MIT GUEST";
+char network[] = "StataCenter";
 #endif
 char password[] = "";
 const char user[] = "";

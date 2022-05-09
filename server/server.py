@@ -245,8 +245,9 @@ class GeoFencer(object):
         return "Off Campus"
 
 class Crud(object):
-    DB_FILE = "/var/jail/home/team10/information.db" 
+    DB_FILE = "/var/jail/home/team10/robot.db" 
     CAM_FILE = "/var/jail/home/team10/camera.db" 
+    LOC_FILE = "/var/jail/home/team10/loc.db" 
 
     def __init__(self):
         pass
@@ -287,14 +288,14 @@ class Crud(object):
         a_y_vals = []
         v_x_vals = []
         v_y_vals = []
-        x_x_vals = []
-        x_y_vals = []
+        #x_x_vals = []
+        #x_y_vals = []
         speeds = []
         directions = []
         times = []
-        buildings = []
+        #buildings = []
 
-        for time_, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction, building in data:
+        for time_, a_x, a_y, v_x, v_y, speed, direction, in data:
             dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
             times.append(dto.strftime("%m/%d/%Y, %H:%M:%S"))
             # acceleration is tilt
@@ -304,13 +305,13 @@ class Crud(object):
             v_x_vals.append(v_x)
             v_y_vals.append(v_y)
             # x/y is now the lat/lon
-            x_x_vals.append(x_x)
-            x_y_vals.append(x_y)
+            #x_x_vals.append(x_x)
+            #x_y_vals.append(x_y)
             speeds.append(speed)
             directions.append(direction)
-            buildings.append(building)
+            #buildings.append(building)
 
-        result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, "x_x": x_x_vals, "x_y": x_y_vals, 'speeds': speeds, 'directions': directions, 'buildings': buildings}
+        result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
     
     @withConnCursor
@@ -319,21 +320,35 @@ class Crud(object):
             return "Error: please provide x and y"
         x_str: str = request["values"]["x"]
         y_str: str = request["values"]["y"]
+        
         try:
             x: float = float(x_str)
             y: float = float(y_str)
             loc: str = GeoFencer.get_area((x, y))
-            return loc
+            now = datetime.now()
+            # post to database 
+            c.execute("""CREATE TABLE IF NOT EXISTS loc_data (time_ timestamp, x_x real, y_y real, build text);""")
+            c.execute('''INSERT into loc_data VALUES (?,?,?,?);''', (now, x,y,loc))
+            return loc 
         except Exception as e:
             return f"Error: please provide x and y as floats, had error: {e}"
     
     @withConnCursor
     def handle_wherehaveibeen(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
-        data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
-        tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, _, _, _, _, x_x, x_y, _, _, build) in data]
+        data = c.execute("""SELECT * FROM loc_data ORDER BY time_ ASC LIMIT 20;""").fetchall() 
+        #tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, x_x, x_y) in data]
         # In theory the building is necessary, but it is what it is
-        tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_]
-        return LOCATIONS_HTML(tlocs)
+        #tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_] # time and location every time 
+        alldata = []
+        for time, lat, lon, building in data:
+            x = { }
+            x["time"] = time
+            x["x_x"] = lat
+            x["x_y"]=lon
+            x["building"] = building 
+            alldata.append(x)
+        return json.dumps({"data" : alldata})
+        #return LOCATIONS_HTML(tlocs) 
 
     @withConnCursor
     def handle_db_api_post(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
@@ -342,13 +357,10 @@ class Crud(object):
         a_y = float(request['form']['a_y'])
         v_x = float(request['form']['v_x'])
         v_y = float(request['form']['v_y'])
-        x_x = float(request['form']['x_x'])
-        x_y = float(request['form']['x_y'])
         speed = request['form']['speed']
         direction = request['form']['dir']
-        build = GeoFencer.get_area((float(x_x), float(x_y)))
-        c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, x_x real, y_y real, speed real, direction real, building text);""")
-        c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y, x_x, x_y, speed, direction, build))
+        c.execute("""CREATE TABLE IF NOT EXISTS full_data (time_ timestamp, a_x real, a_y real, v_x real, v_y real, speed real, direction real);""")
+        c.execute('''INSERT into full_data VALUES (?,?,?,?,?,?,?);''', (now, a_x, a_y, v_x, v_y,speed, direction))
         return "done" 
     
     @withConnCamCursor
@@ -418,9 +430,29 @@ class Crud(object):
         #     """
         if request['values']['camera']=='1':
              return json.dumps({"image_decoded": image_decoded, "object": object_detected})
-        else:
+        else: # if camera is the other one send 
             return object_detected
+
+        
         # send through object detection and result 
+
+    @withConnCamCursor
+    def handle_camera_get_all(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
+        c.execute("""SELECT * FROM cam_data INNER JOIN loc_data USING(time) ORDER BY time_ DESC;""") 
+        cam_data = c.fetchall()
+        return cam_data
+        #c.execute("""SELECT * FROM loc_data ORDER BY time_ DESC;""") 
+        #loc_data = c.fetchall()
+        
+            # for every time 
+        # NOTE image decoded is already decoded
+        #image_decoded = data[1]
+        #object_detected = data[2] 
+        # remove the last //9k=UBcbimsKAExTSKQj/9k=2Q==
+        #image_decoded = image_decoded.split("=")[0] 
+        # send through object detection and result 
+        # get location 
+
         
 
 class Webpage(object):
@@ -459,21 +491,24 @@ class Webpage(object):
 def request_handler(request: Any):
     if request['method'] == 'POST':
         has_value = "values" in request and len(request["values"]) > 0
-        if has_value:
+        if has_value: 
             if "camera" in request["values"]:
                 return Crud.handle_camera_post(request)
+            elif "whereami" in request["values"]: 
+                return Crud.handle_whereami(request)
         else:
             return Crud.handle_db_api_post(request)
     if request["method"] == "GET":
         has_value = "values" in request and len(request["values"]) > 0
         camera = "camera" in request["values"]
+        camera1 = "allcamera" in request["values"]
         if camera:
             return Crud.handle_camera_get(request)
+        if camera1:
+            return Crud.handle_camera_get_all(request)
         
         if has_value:
-            if "whereami" in request["values"]:
-                return Crud.handle_whereami(request)
-            elif "wherehaveibeen" in request["values"]:
+            if "wherehaveibeen" in request["values"]:
                 return Crud.handle_wherehaveibeen(request)
             elif "monalisa" in request["values"]:
                 return Webpage.handle_mona_lisa(request)
