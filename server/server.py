@@ -323,13 +323,8 @@ class Crud(object):
         
         # NOTE image decoded is already decoded
         image_decoded = data[1]
-        cut_prefix = "data:image/jpeg;base64,"
-        cut_length = len(cut_prefix)
-        image_decoded = image_decoded[cut_length:]
-        add_prefix = "data:image/jpeg;base64,"
         # remove the last //9k=UBcbimsKAExTSKQj/9k=2Q==
-        img1, img2 = image_decoded.split("//")
-        image_decoded = add_prefix + img1 + "//" + img2[:2]
+        image_decoded = image_decoded.split("//")[0]
         return f"""
         <!DOCTYPE html>
         <html>
@@ -396,6 +391,7 @@ def request_handler(request: Any):
                 return Crud.handle_wherehaveibeen(request)
             elif "monalisa" in request["values"]:
                 return Webpage.handle_mona_lisa(request)
-            return Webpage.handle_webpage_get(request)
-        else:
+            # values=1 for db api request
             return Crud.handle_db_api_get(request)
+        else:
+            return Webpage.handle_webpage_get(request)
