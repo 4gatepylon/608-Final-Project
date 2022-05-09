@@ -33,7 +33,6 @@ const App = () => {
 
   // use the Data from the server
   const locationList = useData();
-  console.log(locationList);
 
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
