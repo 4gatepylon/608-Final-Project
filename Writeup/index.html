@@ -237,6 +237,65 @@ database directly. We implemented it as a low-level, simple MVP for localization
 Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to locate
 the robot on MIT.
 
+## Database Layout
+### Location Database with Example
+<table class="table">
+    <tbody>
+        <tr>
+            <th style="text-align:left"> "time_" Time (timestamp)</th>
+            <th style="text-align:left"> "x_x" Latitude (real)</th>
+            <th style="text-align:left"> "y_y" Longitude (real)</th>
+            <th style="text-align:left"> "build" Building (text)</th>
+        </tr>
+        <tr>
+            <th style="text-align:left"> 2022-05-08 08:15:27.243860 </th>
+            <th style="text-align:left"> 42.360226</th>
+            <th style="text-align:left"> -71.094139</th>
+            <th style="text-align:left"> Student Center</th>
+        </tr>
+    </tbody>
+</table>
+
+### Camera Database with Example
+<table class="table">
+    <tbody>
+        <tr>
+            <th style="text-align:left"> "time_" Time (timestamp)</th>
+            <th style="text-align:left"> "image" Image Base64 (text)</th>
+            <th style="text-align:left"> "response" Object Metadata (text)</th>
+        </tr>
+        <tr>
+            <th style="text-align:left"> 2022-05-08 08:15:27.243860</th>
+            <th style="text-align:left"> /9j/... </th>
+            <th style="text-align:left"> TODO... </th>
+        </tr>
+    </tbody>
+</table>
+
+### Kinematics Database with Example
+<table class="table">
+    <tbody>
+        <tr>
+            <th style="text-align:left"> "time_" Time (timestamp)</th>
+            <th style="text-align:left"> "a_x" Tilt x (real)</th>
+            <th style="text-align:left"> "a_y" Tilt y (real)</th>
+            <th style="text-align:left"> "v_x" Deprecated (real)</th>
+            <th style="text-align:left"> "v_y" Deprecated (real)</th>
+            <th style="text-align:left"> "speed" Speed (real)</th>
+            <th style="text-align:left"> "direction" Direction (real)</th>
+        </tr>
+        <tr>
+            <th style="text-align:left"> 2022-05-08 08:15:27.243860</th>
+            <th style="text-align:left"> 0.534 </th>
+            <th style="text-align:left"> -0.02 </th>
+            <th style="text-align:left"> 0 </th>
+            <th style="text-align:left"> 0 </th>
+            <th style="text-align:left"> 75</th>
+            <th style="text-align:left"> "1 </th>
+        </tr>
+    </tbody>
+</table>
+
 ## Web Client
 The web client has a browser router to allow users to select between the map of locations or a camera feed. These can be
 switched using a navigation bar at the top of the page. It was challenging integrating the navigation bar, not only
@@ -249,8 +308,8 @@ The ESP32S2 controller is fortunately one of the simpler Arduino implementations
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift that
 to be on-board in Rover, we were able to just handle ESP Now messaging. Every 80ms, our code simply gets the tilt
 (corresponding to speed), processes it, then sends it to Rover (with some additional data like direction, angle, and so
-forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP, DOWN, LEFT,
-RIGHT, for the purpose of keeping a de-noised experience).
+forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP = 1, DOWN = 2,
+LEFT = 3, RIGHT = 4, for the purpose of keeping a de-noised experience; we also have NONE signifying not moving).
 
 The `OnDataSent` function is a callback which ESP Now calls when it successfully sends a message. It is used to inform
 the user through the Serial console (if present) that data was successfully sent (which is important for debugging), but
@@ -310,8 +369,11 @@ For some reason Youtube kept insisting that we make this a short.
     allowfullscreen></iframe>
 
 ### Moving Robot's Wheels (Non-Autonomous)
-<a href="https://www.youtube.com/shorts/9jXhLaQ2g4M">Short is available here.</a>
-For some reason Youtube kept insisting that we make this a short.
+This got like 400 views on Youtube.
+<iframe
+    src="https://player.vimeo.com/video/707954511?h=92e5081bfd&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+    width="325" height="578" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+    title="wheels1.MOV"></iframe>
 
 ## Week 3
 ### Binned Speeds
@@ -320,8 +382,10 @@ For some reason Youtube kept insisting that we make this a short.
     allowfullscreen></iframe>
 
 ### Moving Rover (Autonomous)
-<a href="https://www.youtube.com/shorts/krxloQKdrqQ">Short is available here.</a> For some reason Youtube kept insisting
-that we make this a short.
+<iframe
+    src="https://player.vimeo.com/video/707954440?h=c64497cc93&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
+    width="325" height="578" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+    title="integrated.MOV"></iframe>
 
 ### React Router and Porting to React
 
