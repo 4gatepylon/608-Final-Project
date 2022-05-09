@@ -1,5 +1,5 @@
 import React from "react";
-import { NavBar } from "./NavBar";
+import { ValuesAndNavBar } from "./NavBar";
 
 function Camera() {
   const camera = (
@@ -19,12 +19,7 @@ function Camera() {
     </div>
   );
 
-  return (
-    <div>
-      <NavBar />
-      {camera}
-    </div>
-  );
+  return <div>{camera}</div>;
 }
 
 export default Camera;

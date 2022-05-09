@@ -5,7 +5,7 @@ import { useState } from "react";
 import "./App.css";
 import { Map, Marker, Polyline } from "./components/Map";
 import { useData } from "./components/RobotPlots";
-import { NavBar } from "./components/NavBar";
+import { ValuesAndNavBar } from "./components/NavBar";
 
 console.log(process.env);
 
@@ -19,6 +19,11 @@ type Location = google.maps.LatLngLiteral;
 const App = () => {
   const MIT_Coords = { lat: 42.3595447562244, lng: -71.09189772577619 };
   const MIT_Zoom = 16;
+
+  // state for whether we are on map
+  const [showMap, setShowMap] = React.useState(true);
+  // state for whether we are on camera
+  const [showCamera, setShowCamera] = React.useState(false);
 
   // This sets up the initial position of the map.
   const [clicks, setClicks] = useState<google.maps.LatLng[]>([]);
@@ -74,7 +79,10 @@ const App = () => {
 
   return (
     <div>
-      <NavBar />
+      <ValuesAndNavBar
+        setShowMap={(x: boolean) => setShowMap(x)}
+        setShowCamera={(x: boolean) => setShowCamera(x)}
+      />
       <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
         <div className="bg-white h-20 rounded-lg">
           <img
