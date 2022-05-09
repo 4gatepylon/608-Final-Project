@@ -22,7 +22,7 @@ function Camera() {
 
 
   const camera = (
-    <div className="relative">
+    <div className="relative ">
       <div className="text-xl mb-5 mt-10 flex flex-row justify-center font-serif font-semibold text-cyan-800">
         Live Feed from the camera!
       </div>
@@ -45,7 +45,7 @@ function Camera() {
       <div className="relative flex flex-col justify-center max-w-40">
         {imgSrcList.map((imgSrc, index) => {
           return (
-            <div className="bg-white h-50 rounded-lg justify-center border-8 border-pink-200 ml-auto mr-auto mb-16">
+            <div className="bg-white h-50 rounded-lg justify-center border-8 border-pink-300 ml-auto mr-auto mb-16">
               <img
                 src={imgSrc}
                 className="object-contain"
@@ -58,7 +58,7 @@ function Camera() {
     </div>
   );
 
-  return <div>{camera}</div>;
+  return <div className="flex flex-col h-screen bg-pink-100">{camera}</div>;
 }
 
 export default Camera;
