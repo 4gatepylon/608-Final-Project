@@ -11,9 +11,9 @@
 
 // Unfortunately this nonsense is necessary because Arduino copies the file contents to some
 // other folder.
-#define LIB_PATH_ADRIANO
+//#define LIB_PATH_ADRIANO
 // #define LIB_PATH_SUALEH
-// #define LIB_PATH_NATASHA
+ #define LIB_PATH_NATASHA
 // #define LIB_PATH_DANIELA
 
 #ifdef LIB_PATH_ADRIANO
@@ -167,12 +167,16 @@ float prev_speed;
 MPU6050 imu; // imu object called, appropriately, imu
 
 bool MOVING;
+bool AUTO;
 
 // const int GPS_BUFFER_LENGTH = 200;        // size of char array we'll use for
 // char gps_buffer[GPS_BUFFER_LENGTH] = {0}; // dump chars into the
 
 const int MOVE_BUTTON = 39;
 Button move_button(MOVE_BUTTON);
+
+const int AUTO_BUTTON = 45;
+Button auto_button(AUTO_BUTTON);
 
 WiFiClientSecure client; // global WiFiClient Secure object
 WiFiClient client2;      // global WiFiClient Secure object
@@ -187,41 +191,19 @@ char request[IN_BUFFER_SIZE];
 char response[OUT_BUFFER_SIZE]; // char array buffer to hold HTTP request
 char json_body[JSON_BODY_SIZE];
 
-void unpack_json(char *object_string)
-{
-  char *firstchar = strchr(object_string, '{');
-  char *lastchar = strrchr(object_string, '}');
-  *(lastchar + 1) = '\0';
-  DynamicJsonDocument doc(200);
-  deserializeJson(doc, firstchar);
-  double lat = doc["location"]["lat"];
-  double lng = doc["location"]["lng"];
 
-  sprintf(request_buffer, "GET http://608dev-2.net/sandbox/sc/team10/server.py?whereami=1&y=%f&x=%f HTTP/1.1\r\n", lat, lng);
-  strcat(request_buffer, "Host: 608dev-2.net\r\n");
-  strcat(request_buffer, "\r\n"); // new line from header to body
-
-  do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, true);
-  Serial.println("RESPONSE BUFFER"); // viewable in Serial Terminal
-  Serial.println(response_buffer);   // viewable in Serial Terminal
-  char *location = response_buffer;
-
-  info.lat = (float)lat;
-
-  info.lon = (float)lng;
-}
 
 // callback when data is sent on esp_now
 void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
   char macStr[18];
-  Serial.print("Packet to: ");
+  //Serial.print("Packet to: ");
   // Copies the sender mac address to a string
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  Serial.print(macStr);
-  Serial.print(" send status:\t");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  //Serial.print(macStr);
+  //Serial.print(" send status:\t");
+  //Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
 Direction get_direction(float x, float y)
@@ -379,8 +361,8 @@ void wifi_server_loop(void *parameter)
 {
   for (;;)
   {
-    if (millis() - wifi_scan_timer > DT_WIFI)
-    {
+    //if (millis() - wifi_scan_timer > DT_WIFI)
+    //{
       //   Serial.println("***DOING WIFI SCAN!\n");
       //   int offset = sprintf(json_body, "%s", PREFIX);
       //   // run a new scan. could also modify to use original scan from setup so quicker (though older info)
@@ -423,19 +405,17 @@ void wifi_server_loop(void *parameter)
       //     unpack_json(response);
       //   }
       // displayAllGPS();
-    }
-
+    //}
+    int autoFlag = auto_button.update();
     body[0] = 0;
     sprintf(
-        body, "a_x=%f&a_y=%f&v_x=%d&v_y=%d&x_x=%f&x_y=%f&angle=%f&dir=%d&speed=%f",
+        body, "a_x=%f&a_y=%f&v_x=%d&v_y=%d&angle=%f&dir=%d&speed=%f",
         // NOTE this used to be "acceleration"
         info.tilt.x,
         info.tilt.y,
         // NOTE this is ignored
         0,
         0,
-        info.lat,
-        info.lon,
         info.angle,
         info.direction,
         info.speed);
@@ -453,6 +433,20 @@ void wifi_server_loop(void *parameter)
     Serial.println(response_buffer2);
 
     delay(DT_SERVER);
+
+    
+    sprintf(request_buffer,"GET http://608dev-2.net/sandbox/sc/team10/server.py?camera=2 HTTP/1.1\r\n");
+      strcat(request_buffer,"Host: 608dev-2.net\r\n");
+      strcat(request_buffer,"\r\n"); //new line 
+      do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT,true);
+      Serial.println("RESPONSE BUFFER"); //viewable in Serial Terminal
+      //Serial.println(response_buffer); 
+      tft.setCursor(50,10,4);
+      tft.println(response_buffer);
+      // sender gets from server 
+      delay(DT_SERVER);
+
+    
   }
 }
 
@@ -621,9 +615,9 @@ void setup()
   timer = millis();
 
   // Set up MAC-based esp now
-  // esp_now_register_send_cb(OnDataSent);
+  esp_now_register_send_cb(OnDataSent);
 
-  // Serial.println("DATASENT");
+  Serial.println("DATASENT");
   // register peer
   peerInfo.channel = 0;
   peerInfo.encrypt = false;
@@ -640,6 +634,7 @@ void setup()
   wifi_scan_timer = millis();
 
   pinMode(MOVE_BUTTON, INPUT_PULLUP);
+  pinMode(AUTO_BUTTON, INPUT_PULLUP);
   MOVING = false;
 
   // Set up the bins
@@ -682,5 +677,5 @@ void setup()
 
 void loop()
 {
-  delay(1);
+  
 }

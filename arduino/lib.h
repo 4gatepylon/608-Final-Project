@@ -41,8 +41,6 @@ struct WireData
     Vec tilt;
     float angle;
     float speed;
-    float lat;
-    float lon;
     Direction direction;
 };
 
@@ -51,7 +49,7 @@ struct WireData
 // We can seperate into multiple files and then use guards once we have a better build tool.
 const int RESPONSE_TIMEOUT = 6000;     // ms to wait for response from host
 const int POSTING_PERIOD = 6000;       // periodicity of getting a number fact.
-const uint16_t IN_BUFFER_SIZE = 5672;  // size of buffer to hold HTTP request
+const uint16_t IN_BUFFER_SIZE = 4856;  // size of buffer to hold HTTP request
 const uint16_t OUT_BUFFER_SIZE = 3500; // size of buffer to hold HTTP response
 const uint16_t JSON_BODY_SIZE = 3000;
 
@@ -59,7 +57,7 @@ const uint16_t JSON_BODY_SIZE = 3000;
 #ifdef IN_LAB
 char network[] = "EECS_Labs";
 #else
-char network[] = "MIT GUEST";
+char network[] = "StataCenter";
 #endif
 char password[] = "";
 const char user[] = "";

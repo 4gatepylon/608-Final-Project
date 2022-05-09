@@ -5,7 +5,8 @@ import { useState } from "react";
 import "./App.css";
 import { Map, Marker, Polyline } from "./components/Map";
 import { useData } from "./components/RobotPlots";
-import { NavBar } from "./components/NavBar";
+import { ValuesAndNavBar } from "./components/NavBar";
+import Camera from "./components/Camera";
 
 console.log(process.env);
 
@@ -20,49 +21,24 @@ const App = () => {
   const MIT_Coords = { lat: 42.3595447562244, lng: -71.09189772577619 };
   const MIT_Zoom = 16;
 
+  // state for whether we are on map
+  const [showMap, setShowMap] = React.useState(false);
+  // state for whether we are on camera
+  const [showCamera, setShowCamera] = React.useState(true);
+
   // This sets up the initial position of the map.
   const [clicks, setClicks] = useState<google.maps.LatLng[]>([]);
   const [center, setCenter] = useState<google.maps.LatLngLiteral>(MIT_Coords);
   const [zoom, setZoom] = useState(MIT_Zoom);
 
   // use the Data from the server
-  const rawData = useData();
+  const locationList = useData();
 
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  // const locationList: Location[] = useMemo(() => [], []);
-
-  // useMemo(() => {
-  //   const dataLength = rawData["x_y"].length;
-  //   for (let i = 0; i < 3; i++) {
-  //     locationList.push({
-  //       lat: rawData["x_x"][i],
-  //       lng: rawData["x_y"][i],
-  //     });
-  //   }
-  //   console.log(locationList);
-  // }, [locationList, rawData]);
-
-  const locationList = rawData;
-  console.log(locationList);
-
-  // // now we set the center to the last location in the data
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (locationList.length > 0 && autoRefresh) {
-  //       setCenter({
-  //         lat: locationList[locationList.length - 1].lat,
-  //         lng: locationList[locationList.length - 1].lng,
-  //       });
-  //       setZoom(25);
-  //     }
-  //   }, 100000000);
-  //   return () => clearInterval(interval);
-  // }, [locationList, autoRefresh]);
-
   const onClick = (e: google.maps.MapMouseEvent) => {
-    setClicks([...clicks, e.latLng!]);
+    setClicks([...clicks, e.latLng]);
   };
 
   const onIdle = (m: google.maps.Map) => {
@@ -80,46 +56,48 @@ const App = () => {
     return <h1>{status}</h1>;
   };
 
+  const mapHtml = (
+    <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
+      <Wrapper apiKey={apiKey} render={render}>
+        <Map
+          center={center}
+          onClick={onClick}
+          onIdle={onIdle}
+          zoom={zoom}
+          style={{ flexGrow: "1", height: "100%" }}
+        >
+          {clicks.map((latLng, i) => (
+            <Marker key={i} position={latLng} />
+          ))}
+
+          {locationList.map((location, i) => (
+            <Marker key={i * 1000} position={location} />
+          ))}
+
+          <Polyline
+            path={locationList}
+            geodesic={true}
+            strokeColor="#FF0000"
+            strokeOpacity={1.0}
+            strokeWeight={2}
+          />
+        </Map>
+      </Wrapper>
+      {/* Basic form for controlling center and zoom of map. */}
+      {/* {form} */}
+    </div>
+  );
+
+  const cameraHtml = <Camera />;
+
   return (
     <div>
-      <NavBar />
-      <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
-        {/* <div className="bg-white h-20 rounded-lg">
-        <img
-          src={
-            "data:image/gif;base64, R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-          }
-          className="object-contain"
-          alt={"camera output"}
-        />
-      </div> */}
-        {/* <Wrapper apiKey={apiKey} render={render}>
-          <Map
-            center={center}
-            onClick={onClick}
-            onIdle={onIdle}
-            zoom={zoom}
-            style={{ flexGrow: "1", height: "100%" }}
-          >
-            {clicks.map((latLng, i) => (
-              <Marker key={i} position={latLng} />
-            ))}
-
-            {locationList.map((location, i) => (
-              <Marker key={i * 1000} position={location} />
-            ))}
-            <Polyline
-              path={locationList}
-              geodesic={true}
-              strokeColor="#FF0000"
-              strokeOpacity={1.0}
-              strokeWeight={2}
-            />
-          </Map>
-        </Wrapper> */}
-        {/* Basic form for controlling center and zoom of map. */}
-        {/* {form} */}
-      </div>
+      <ValuesAndNavBar
+        setShowMap={(x: boolean) => setShowMap(x)}
+        setShowCamera={(x: boolean) => setShowCamera(x)}
+      />
+      {showMap && mapHtml}
+      {showCamera && cameraHtml}
     </div>
   );
 };

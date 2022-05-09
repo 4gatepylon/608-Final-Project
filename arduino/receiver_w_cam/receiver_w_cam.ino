@@ -691,14 +691,15 @@ void loop() {
       ;
     primary_timer = millis();
   
-    
-    while (millis() - primary_timer < 20000) {// every 20 seconds take new picture 
-      serverCapture();
-    }
-    primary_timer = millis(); 
-
     esp_now_register_recv_cb(OnDataRecv);
     moveCar(info.direction, info.speed);
+    
+    //while (millis() - primary_timer < 20000) {// every 20 seconds take new picture 
+    serverCapture();
+    //}
+    primary_timer = millis(); 
+
+    
     
 
   }

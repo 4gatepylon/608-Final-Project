@@ -1,0 +1,9 @@
+import io
+from PIL import Image
+
+
+imageBytesString = 'u\xabZ\x8af\xa0{\xf8"}\xb6\xac{\xae\x11\xd2Q\x8e\x0eX@@\x00@\x00\x00\x00\x08~A\x00B\x80\x00@\x0b\x00\x00\x00\x00\x00@\x00@\x00\x00\x80\x93\x00@\x0e'
+
+imageStream = io.BytesIO(imageBytesString)
+imageFile = Image.open(imageStream)
+print(imageFile.size)
