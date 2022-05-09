@@ -6,6 +6,7 @@ import "./App.css";
 import { Map, Marker, Polyline } from "./components/Map";
 import { useData } from "./components/RobotPlots";
 import { ValuesAndNavBar } from "./components/NavBar";
+import Camera from "./components/Camera";
 
 console.log(process.env);
 
@@ -21,9 +22,9 @@ const App = () => {
   const MIT_Zoom = 16;
 
   // state for whether we are on map
-  const [showMap, setShowMap] = React.useState(true);
+  const [showMap, setShowMap] = React.useState(false);
   // state for whether we are on camera
-  const [showCamera, setShowCamera] = React.useState(false);
+  const [showCamera, setShowCamera] = React.useState(true);
 
   // This sets up the initial position of the map.
   const [clicks, setClicks] = useState<google.maps.LatLng[]>([]);
@@ -31,35 +32,14 @@ const App = () => {
   const [zoom, setZoom] = useState(MIT_Zoom);
 
   // use the Data from the server
-  const rawData = useData();
+  const locationList = useData();
+  console.log(locationList);
 
   // setup the state for autorefresh
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  const [imgSrcList, setImgSrcList] = useState(["empty"]);
-
-  React.useEffect(() => {
-    async function getImgSrcList() {
-      const imgSrcResult = await fetch(
-        "https://608dev-2.net/sandbox/sc/team10/server.py?camera=1"
-      );
-      if (imgSrcResult) {
-        const jsonResult = await imgSrcResult.json();
-        const imgSrcString: string = jsonResult["image_decoded"];
-        const newImgSrcString = [imgSrcString, imgSrcString, imgSrcString];
-        setImgSrcList(newImgSrcString);
-      }
-
-      //setImgSrc(imgSrcResult);
-    }
-    getImgSrcList();
-  }, [imgSrcList]);
-
-  const locationList = rawData;
-  // console.log(locationList);
-
   const onClick = (e: google.maps.MapMouseEvent) => {
-    setClicks([...clicks, e.latLng!]);
+    setClicks([...clicks, e.latLng]);
   };
 
   const onIdle = (m: google.maps.Map) => {
@@ -77,47 +57,48 @@ const App = () => {
     return <h1>{status}</h1>;
   };
 
+  const mapHtml = (
+    <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
+      <Wrapper apiKey={apiKey} render={render}>
+        <Map
+          center={center}
+          onClick={onClick}
+          onIdle={onIdle}
+          zoom={zoom}
+          style={{ flexGrow: "1", height: "100%" }}
+        >
+          {clicks.map((latLng, i) => (
+            <Marker key={i} position={latLng} />
+          ))}
+
+          {locationList.map((location, i) => (
+            <Marker key={i * 1000} position={location} />
+          ))}
+
+          <Polyline
+            path={locationList}
+            geodesic={true}
+            strokeColor="#FF0000"
+            strokeOpacity={1.0}
+            strokeWeight={2}
+          />
+        </Map>
+      </Wrapper>
+      {/* Basic form for controlling center and zoom of map. */}
+      {/* {form} */}
+    </div>
+  );
+
+  const cameraHtml = <Camera />;
+
   return (
     <div>
       <ValuesAndNavBar
         setShowMap={(x: boolean) => setShowMap(x)}
         setShowCamera={(x: boolean) => setShowCamera(x)}
       />
-      <div className="h-auto absolute top-0 left-0 right-0 bottom-0 mt-14">
-        <div className="bg-white h-20 rounded-lg">
-          <img
-            src={imgSrcList[0]}
-            className="object-contain"
-            alt={"camera output"}
-          />
-        </div>
-        <Wrapper apiKey={apiKey} render={render}>
-          <Map
-            center={center}
-            onClick={onClick}
-            onIdle={onIdle}
-            zoom={zoom}
-            style={{ flexGrow: "1", height: "100%" }}
-          >
-            {clicks.map((latLng, i) => (
-              <Marker key={i} position={latLng} />
-            ))}
-
-            {locationList.map((location, i) => (
-              <Marker key={i * 1000} position={location} />
-            ))}
-            <Polyline
-              path={locationList}
-              geodesic={true}
-              strokeColor="#FF0000"
-              strokeOpacity={1.0}
-              strokeWeight={2}
-            />
-          </Map>
-        </Wrapper>
-        {/* Basic form for controlling center and zoom of map. */}
-        {/* {form} */}
-      </div>
+      {showMap && mapHtml}
+      {showCamera && cameraHtml}
     </div>
   );
 };
