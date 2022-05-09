@@ -280,6 +280,17 @@ class Crud(object):
             return result
         return wrapper
     
+    def withConnLocCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str]) -> str:
+        """ Wrap your functions in this when you want them to have access to the database"""
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(Crud.LOC_FILE)
+            c = conn.cursor()
+            result = func(c, conn, *args, **kwargs)
+            conn.commit()
+            conn.close()
+            return result
+        return wrapper
+
     @withConnCursor
     def handle_db_api_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         data = c.execute("""SELECT * FROM full_data ORDER BY time_ ASC;""").fetchall()
@@ -314,7 +325,7 @@ class Crud(object):
         result_dict = {"times": times, "a_x": a_x_vals, "a_y": a_y_vals, "v_x": v_x_vals, "v_y": v_y_vals, 'speeds': speeds, 'directions': directions}
         return json.dumps(result_dict)
     
-    @withConnCursor
+    @withConnLocCursor 
     def handle_whereami(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         if not "x" in request["values"] or not "y" in request["values"]:
             return "Error: please provide x and y"
@@ -333,7 +344,7 @@ class Crud(object):
         except Exception as e:
             return f"Error: please provide x and y as floats, had error: {e}"
     
-    @withConnCursor
+    @withConnLocCursor 
     def handle_wherehaveibeen(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         data = c.execute("""SELECT * FROM loc_data ORDER BY time_ ASC LIMIT 20;""").fetchall() 
         #tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, x_x, x_y) in data]
@@ -439,8 +450,8 @@ class Crud(object):
     @withConnCamCursor
     def handle_camera_get_all(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
         c.execute("""SELECT * FROM cam_data INNER JOIN loc_data USING(time) ORDER BY time_ DESC;""") 
-        cam_data = c.fetchall()
-        return cam_data
+        all_data = c.fetchall() 
+        return all_data 
         #c.execute("""SELECT * FROM loc_data ORDER BY time_ DESC;""") 
         #loc_data = c.fetchall()
         
