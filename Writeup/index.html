@@ -32,7 +32,7 @@ TODO. We will have a video here soon.
 
 # High Level Overview
 Our goal with this project has been to create a remote control system to remotely explore
-different areas (on earth). This system mainly involves a tilt-based controller built using an Arduino
+different areas of campus. This system mainly involves a tilt-based controller built using an Arduino
 in addition to a wheeled robot, which moves can move forwards
 or backwards or turn left or right based on the tilt of the controller. The robot can also
 collect information about the world around it, including camera images, location data, and
@@ -56,10 +56,9 @@ Functionality for our system is fairly intuitive and simple. Users press the sta
 controller
 to begin moving the the robot. They then tilt forwards to move the robot forwards, backwards to move backwards, and to
 either
-side to move only one wheel (spinning the robot). "Forwards" for the robot always means with respect to its own
+side to move only one wheel (spinning the robot). ``Forwards'' for the robot always means with respect to its own
 direction
-and
-not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
+and not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
 movement).
 The user can disable movement by clicking button 1 again. They can open up our website to run the web client to see
 the camera feed from the robot (at a rather slow framerate). On that same website, they can use the top menu bar to
@@ -98,7 +97,7 @@ The robot is able to detect whether objects are close to it, right in front. Thi
 exploration of what the robot will need in the future to be fully autonomous.
 
 ## System Diagram
-TODO
+<img src="sys1.png"></img>
 
 ## System Layout
 The physical system, barring the infrastructure for the server, is broken up into three pieces: the controller,
@@ -326,12 +325,12 @@ the robot on MIT.
         <tr>
             <th style="text-align:left"> "time_" Time (timestamp)</th>
             <th style="text-align:left"> "image" Image Base64 (text)</th>
-            <th style="text-align:left"> "response" Object Metadata (text)</th>
+            <th style="text-align:left"> "response" Object Detection Class (text)</th>
         </tr>
         <tr>
             <th style="text-align:left"> 2022-05-08 08:15:27.243860</th>
             <th style="text-align:left"> /9j/... </th>
-            <th style="text-align:left"> TODO... </th>
+            <th style="text-align:left"> person </th>
         </tr>
     </tbody>
 </table>
@@ -477,7 +476,7 @@ This got like 400 views on Youtube.
 <iframe src="https://drive.google.com/file/d/1iCJSLg03OSt5NRfpT1u9LspFbheg6mrJ/preview" width="640" height="480"
     allow="autoplay"></iframe>
 
-## Week 4 - TODO
+## Week 4
 ### Robot Localization (from Robot) using GPS or Alternative Method
 You can find our short <a href="https://www.youtube.com/shorts/DohrP9NixmE">here</a>.
 
