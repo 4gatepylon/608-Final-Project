@@ -186,7 +186,7 @@ independently
 with a power supply and thereby make our robot autonomous (disconnecting it from the computer) and able to power its
 sensors.</p>
 
-<p><strong>Arudcam debugging</strong>
+<p><strong>Arducam debugging.</strong>
 We first tested the camera with the example script. Then we base64 encoded the image and sent a post request to the server. 
 There were quite a few issues we faced including running out of buffer size so we tried PSram but our Arduino didn't have the Wrover ESP32 chip so we ended up 
 reducing the resolution to 160x120 which is sufficient for object detection (which we wantd to support, and did). 
@@ -366,12 +366,12 @@ snippets to give you a sense of what modifiying our databases looks like.</p>
         <tr>
             <th style="text-align:left"> Camera GET </th>
             <th style="text-align:left"> ?camera=1 </th>
-            <th style="text-align:left"> Get an HTML page with a picture from the latest camera feed. </th>
+            <th style="text-align:left"> Get the latest database entry for a picture from the latest camera feed. </th>
         </tr>
         <tr>
             <th style="text-align:left"> Camera All GET </th>
             <th style="text-align:left"> ?allcamera=1 </th>
-            <th style="text-align:left"> Get an serialized sequence of images in base64. </th>
+            <th style="text-align:left"> Get an array of arrays, each containing a camera feed entry and its corresponding location database entry. </th>
         </tr>
     </tbody>
 </table>
@@ -475,7 +475,7 @@ conditionally render based on the state.</p>
 <h2 id="esp32-controller-sender-">ESP32 Controller (Sender)</h2>
 <b>Sender.ino: /arduino/sender/sender.ino</b>
 <p>
-he ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
+The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
 that
