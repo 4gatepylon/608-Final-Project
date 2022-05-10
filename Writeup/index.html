@@ -151,6 +151,7 @@ pins were outdated. After discussing with a TA, we were able to find the right p
 display
 anything. We tried all permutations of wiring for our GPS module, but were unable to fetch location information even
 with it flashing as if it were functional. For that reason we abandoned GPS in favor of wifi-scanning.</p>
+
 <p><strong>Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.</strong> Wifi-scanning from the lab
 was
 too slow for our needs, since it blocked the robot from acting on controller requests to change speed. For this reason
@@ -160,7 +161,7 @@ sporadically
 and unpredictably when the Wifi module did a scan to update its information regarding nearby access points (to query
 Google's API with). This forced us to simply use a third Arduino for our location data collection.</p>
 
-<p><strong>Using a react-based web client on the server.</strong> Our goal was to create a reactive
+<p><strong>Serving a react-based web client on the server.</strong> Our goal was to create a reactive
 web-client for our application so that we could enable real-time data and control of the robot. 
 However, we had to create a client-server system that would be compatible with the 6.08 server, which
 has certain limitations in which content type it can serve. We initially tried to use an HTML file and inject 
@@ -175,6 +176,7 @@ the public build from the 6.08 server, and serve our entire app, including diffe
 especially in base64, to store on the Arduino and send to the server in one request. We also worried at first that these images
 would not fit into our database. Fortunately, this was not the case and we were able to do both of these things by
 picking the smallest possible image size, 160x120.</p>
+
 <p><strong>Lack of power for a sensor-laden robot.</strong> We were unable to do an end to end test until week 3 of the project
 because
 the robot had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack
@@ -184,7 +186,16 @@ independently
 with a power supply and thereby make our robot autonomous (disconnecting it from the computer) and able to power its
 sensors.</p>
 
-<p><strong>JPEG HTML embedding</strong> We encountered challenges in serving images on our front-end from the database, which 
+<p><strong>Arudcam debugging</strong>
+We first tested the camera with the example script. Then we base64 encoded the image and sent a post request to the server. 
+There were quite a few issues we faced including running out of buffer size so we tried PSram but our Arduino didn’t have the Wrover ESP32 chip so we ended up 
+reducing the resolution to 160x120 which is sufficient for future object detection. 
+Then on the server side, we created a new database that stores 1 entry of the timestamp and base 64 encoding of the image. 
+We also decoded the base 64 encoding and saved the image as a jpg which initially would get overwritten to avoid database space constraints, 
+but eventually we were able to save multiple images.
+</p>
+
+<p><strong>JPEG HTML embedding.</strong> We encountered challenges in serving images on our front-end from the database, which 
 were even harder to tackle because of the variety of software and hardware components involved in this feature.
 We initially confirmed that the Arduino camera was properly taking images by decoding the base64 image strings
 on our local computers and successfully viewing the images. However, our HTML server would attempt to decode
@@ -207,13 +218,70 @@ moving objects). The TAs told us that this was as good as we were gonna get from
 imagine that with better hardware and some performance optimization (and streaming) it would be possible to have a
 more
 real-time feed.</p>
+
+<p><strong>Object detection model and API use.</strong>
+
+We went about a few methods for object detection. One was creating our own model, which worked, but since we couldn’t download tensorflow on the 
+server we restarted and instead used a google vision API from the server. We went through a number of authentication issues with private keys etc. but ultimately were 
+able to compute the object closest to the camera and its coordinates and save this object in the database. 
+It is also sent to the TFT of the sender so the sender can now decide whether they want to look at the camera or just 
+their TFT screen when controlling the robot. As a simple add-on this would enable us to stop the car if a person is detected in sight (to create an “auto-mode”). </p>
+
+<p><strong>Speed data collection.</strong>
+Since to get real time data, we ran the speed collection loop in parallel (on one of the two cores) to all server requests, we ran into some parallelism issues that caused the Arduino to 
+intermittently crash for unknown reasons. We had to temporarily disable wifi scanning on the ESP, until we moved wifi scanning only to the robot.
+</p>
+
+<p><strong>Path data sending.</strong>
+The challenges for this aspect included working with large amounts of data to understand the format it was coming in, such as through well placed console.log messages or using API tools to 
+check the output of API endpoints. It also included trying out different intervals of data retrieval that would be reasonable yet not slow down the UI significantly. 
+</p>
+
 <h3 id="design-decisions">Design Decisions</h3>
-<p>In addition to the above, we also had to scrap our wish to create gesture control since according to Joe it would be
-too difficult. That information led us to choose tilt control since we had proven, in one of the labs, that it could
-function reasonably well.</p>
-<p>Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
-understand that requiring Wifi is potentially not ideal for the sort of hypothetical scenarios in which a robot like
-this would be useful, but we understand that to create our MVP it was necessary to use the tools at our disposal.</p>
+
+<p><strong>Map front-end path rendering.</strong>
+ We used google map's API to show a "polyline" in between each pair of adjacent points. We also refactored the code in order to properly refresh and load the coordinates. 
+ Before, the webapp was pushing all new points into an array constantly, which made the webapp very slow. Now, we have a separate async function that gets the data from the API, 
+ reformats it into the right format (array of coordinates rather than dictionary of array of lat, array of lng, etc.) and sends the full updated data to the server. 
+ This also allows us to only send the most recent set of coordinates into the UI component.
+</p>
+
+<p><strong>Robot movement control.</strong> After some exploration and risk assessment, we decided to proceed with tilt control rather than gesture control since gesture control 
+    brings about challenges such as reliable detection of relative movement and individual, independent motions. Tilt control would be 
+more feasible and reasonable with the scope of our project, and had proven to be robust and reliable with our other class projects. </p>
+
+<p><strong>Location detection.</strong>
+Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
+understand that requiring Wifi is potentially not ideal for the sort of hypothetical scenarios in which a robot like this would be useful, but
+understand that to create our MVP it was necessary to use the tools at our disposal.
+We decided that instead of using the GPS module, we were going to run 2 ESPs in parallel on the robot to load balance the work between,
+one one hand, locomotion and sensors, and on the other, wifi scanning and certain HTTP/HTTPS requests (the latter of which are very slow, and blocking).
+We'd also tried to use the dual core for this purpose initially, but it led to parallelism bugs likely due to shared resources (we got Guru meditation
+errors sporadically for illegal writes to, supposedly, shared memory). Using 2 ESPs solved our problems, so we settled with that strategy.
+</p>
+
+<p><strong>Path photo history.</strong>
+In order to correlate images with locations along a path, we designed an API endpoint that returns an array of images from the database and also the information about where 
+and when the image was taken. It does this by querying the location database with a certain time range based on the image datetime for each image. The main challenge 
+was developing an efficient design for this and deciding to minimize the location data we query for on each database query by looping through just the images we need. 
+</p>
+
+<p><strong>UI design decisions.</strong>
+We also developed a front-end function that returns multiple images from an API endpoint, and further learned how to enable seamless array data transfer from the server.py file to a 
+front-end JavaScript file with JSON parsing, allowing it to render continuously and with negligible delay.
+</p>
+
+<p><strong>Showing path history.</strong>
+We store a path using the start and end timestamps for that path, and had to decide how to display this data. We created a simple frontend in react that is a static table which you 
+interact with using url parameters, for flexibility and easy access. We decided to limit the table to 20 entries for readability, and it only shows times after the start time and before the end time.
+</p>
+
+<p><strong>Binned speeds.</strong>
+Inspired by the napster lab, we binned the speeds of the robot. We added minimum tilts in each axis necessary to enable movement and then broke up the speeds into quartiles. This would allow our robot to move at different speeds. 
+We used a linear interpolation/mapping from the space of tilts to the space of speeds (with clipping for a max tilt of around 1G at 180 degrees and min tilt of that but negative).
+In the process of doing this, to get real time data, we also ran the loop in parallel (on one of the two cores) to all server requests because otherwise they would block and ruin the user experience. 
+We were able to combine the binned-speed controller plus the robot by using the battery pack for the controller. 
+</p>
 
 <h1 id="detailed-code-layout">Detailed Code Layout</h1>
 <h2 id="server">Server</h2>
