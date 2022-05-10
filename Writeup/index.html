@@ -52,37 +52,37 @@ areas where our robot is effective, such as using the Wifi-Scan Google API from 
 controller
 to begin moving the the robot. They then tilt forwards to move the robot forwards, backwards to move backwards, and to
 either
-side to move only one wheel (spinning the robot). ``Forwards&#39;&#39; for the robot always means with respect to its own
+side to move only one wheel (spinning the robot). "Forwards" for the robot always means with respect to its own
 direction
 and not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
 movement).
 The user can disable movement by clicking button 1 again. They can open up our website to run the web client to see
 the camera feed from the robot (at a rather slow framerate). On that same website, they can use the top menu bar to
-select whether to switch to a historical map of the robot&#39;s trajectory.</p>
+select whether to switch to a historical map of the robot&#39;s trajectory or to save a set of times representing the start and end date/times of a path that is being recorded.</p>
 <h3 id="start-robot-path">Start Robot Path</h3>
 <p>We have an SQLite server on back-end that is updated on a consistent basis by the the robot. Every
-couple milliseconds controller-robot system adds the latest kinematic data to the database, while
+couple milliseconds, the controller-robot system adds the latest kinematic data to the database, while
 the every few seconds the robot performs a wifi scan to update the database with the latest
 location data using a Google API.</p>
 <h3 id="tilt-control-speeds-and-direction">Tilt control- speeds and direction</h3>
 <p>We use a linearly interpolated and binned tilt-based controller. We began by modifying the ball simulation lab
-code to not use a simulation, but instead simply send its tilt information to another Arduino using a the ESP Now
-module. We were able to use a simple Arduino ``script&#39;&#39; sketch to display the unchanging MAC address of the
+code to not use a simulation, but instead to simply send its tilt information to another Arduino using a the ESP Now
+module. We were able to use a simple Arduino ""script" sketch to display the unchanging MAC address of the
 the robot&#39;s ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
 number
 because from experiment we found it to be responsive enough for a user to intuitively control the robot, and slow enough
 to avoid clogging up bandwidth (which we also need for other features, like locating the robot).</p>
 <h3 id="view-camera-feed-on-server">View Camera feed on Server</h3>
-<p>We set up an Arducam on the robot to take small pictures of the space facing in front of they robot eery couple seconds.
+<p>We set up an Arducam on the robot to take small pictures of the space facing in front of they robot every couple seconds.
 These are streamed up to the web server as base64 which then is stored in a camera database, also in SQLite.
 Fortunately, our photos are small enough to fit.</p>
 <h3 id="view-robot-paths-on-server-start-a-new-path-">View robot paths on server (start a new path)</h3>
-<p>We have a database that stores the robot&#39;s locations on the MIT campus, as well as in latitude and longitude, the former
+<p>We have a database that stores the robot&#39;s locations as latitude and longitude plus an MIT building (or "off campus"), the former
 being similar to the lab. We have a few endpoints for this information. One returns a table of the locations the robot
 visited over time in sequence, just like in the lab. Another, returns a Google Maps map with waypoints where the robot
 visited connected by polylines to provide a more intuitive and aesthetic interface. These are reachable from our
 home
-page, which is served by the 608 server.</p>
+page, which is served by the 608 server. We also have a basic front end for starting and stopping (named) path recordings to save specific paths that may be of interest (for example pertaining to different users).</p>
 <h3 id="auto-mode-object-detection-with-camera-feed">Auto Mode: object detection with camera feed</h3>
 <p>The robot is able to detect whether objects are close to it, right in front. This data is meant mainly as an
 exploration of what the robot will need in the future to be fully autonomous.</p>
@@ -193,7 +193,7 @@ adapting the image data source component to include or exclude different section
 and other attributes. We started to clip certain parts of the base64 data string itself, since we noticed it had 
 extraneous characters at the beginning or end. We eventually found that our hardware code was storing image data strings 
 with padding characters at the end, separated by a "=" symbol from the rest of the valid base64 characters. For some 
-reason, our local file server was able to parse these anyways, but our HTMl server would not render the image with this 
+reason, our local file server was able to parse these anyways, but our HTML server would not render the image with this 
 suffix. Finally, we implemented parsing code to make sure the front-end server is receiving valid <code>base64</code> image 
 source strings from the database.</p>
 
@@ -213,7 +213,7 @@ too difficult. That information led us to choose tilt control since we had prove
 function reasonably well.</p>
 <p>Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
 understand that requiring Wifi is potentially not ideal for the sort of hypothetical scenarios in which a robot like
-The robot would be useful, but understand that to create our MVP it was necessary to use the tools at our disposal.</p>
+this would be useful, but we understand that to create our MVP it was necessary to use the tools at our disposal.</p>
 
 <h1 id="detailed-code-layout">Detailed Code Layout</h1>
 <h2 id="server">Server</h2>
@@ -301,6 +301,11 @@ snippets to give you a sense of what modifiying our databases looks like.</p>
             <th style="text-align:left"> ?camera=1 </th>
             <th style="text-align:left"> Get an HTML page with a picture from the latest camera feed. </th>
         </tr>
+        <tr>
+            <th style="text-align:left"> Camera All GET </th>
+            <th style="text-align:left"> ?allcamera=1 </th>
+            <th style="text-align:left"> Get an serialized sequence of images in base64. </th>
+        </tr>
     </tbody>
 </table>
 
@@ -378,7 +383,7 @@ real-time view of the camera feed from the robot. The map communicates with a Go
 pins and create paths, which helps visualize what the robot does.</p>
 <p>The other major advantage of React is that enables us to do single-page routing. This is ideal for us because deployment
 on the python server (which is not meant to serve multipage applications) was non-trivial, and thus having a stateful
-single-page application handles theseengineering challenges on the client side more easily.</p>
+single-page application handles these engineering challenges on the client side more easily.</p>
 <h3 id="layout-handling">Layout Handling</h3>
 <p>We used Tailwind CSS to generate utility classes which handle all of the styling on the webpages. Tailwind CSS is unique
 in that it helped with tricky layout handling for the canvas, especially the Google API map.</p>
@@ -386,7 +391,7 @@ in that it helped with tricky layout handling for the canvas, especially the Goo
 <p>The main insight for deploying reactive applications using a build tool like webpack from the 6.08 server is that you
 need to staticaly bundle everything somewhere where it can be reached, an then you need to change the paths in your
 javascript file to include the full path on the 6.08 server. We were able to do this by changing environment variables
-in a secrets file. Changing the secrets file is also important because if students are using an API key like we were for
+in a secrets file during build time. Changing the secrets file on the server itself is also important because if students are using an API key like we were for
 the Google Map, then it is important that they avoid writing it in their javascript file due to security concerns. This
 is not obvious to someone new to web development, but it is important to understand.</p>
 <h3 id="challenges">Challenges</h3>
@@ -401,9 +406,9 @@ Instead, we used a state machine (similar to those we&#39;ve seen throughout the
 page has a state (roughly) and each state transitions to each other using a button in the header of our web client. We
 conditionally render based on the state.</p>
 <h2 id="esp32-controller-sender-">ESP32 Controller (Sender)</h2>
-<p>Sender.ino: /arduino/sender/sender.ino</p>
-<p>Sender.ino: /arduino/sender/sender.ino
-The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
+<b>Sender.ino: /arduino/sender/sender.ino</b>
+<p>
+he ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
 that
@@ -420,7 +425,7 @@ but
 is otherwise not that important. The functions <code>get_direction</code>, <code>get_speed</code>, and <code>get_angle</code> turn tilt data into a
 direction and a speed for that direction. As previously mentioned there are four directions for the four rays coming
 out
-of the origin of the four axis on the 2D plane corresponding to the birds-eye view of the ground. We also have a
+of the origin of the two axes on the 2D plane corresponding to the birds-eye view of the ground. We also have a
 functionality to print these kinematics data to the TFT so the user can know how they are conrolling the robot (for
 example if it&#39;s far away).</p>
 <p>We bin our speeds into 4 bins based on a linear mapping from the range of tilts (between 0 and 1G) and the range of
@@ -428,12 +433,12 @@ speeds (between 0 and 100 in a unit pre-determined by our motor driver). This is
 Napster
 lab for the notes, except the function is in fact purely linear.</p>
 <h2 id="esp32-robot-driver-and-sensor-">ESP32 Robot (Driver and Sensor)</h2>
-<p>Receiver_w_cam.ino</p>
-<p>This file includes both camera detection and posting as well as receiver code for esp now communication and converting speed, direction to robot instructions with move_car. For camera detection we set resolution to 160x120 to not overflow space and base64 encoded each frame before posting to the camera database. Additional parsing was done on the server. 
-The file also included esp now code through OnDataRecv to receive the x,y tilt info but also associated stats through the info variables which contains direction and speed- later passed into moveCar.    </p>
-<p>Support functions: /arduino/receiver_w_cam/camera_support.h. Support functions for camera so includes base_64 encoding helper functions from lab. </p>
-<h2 id="dual-core-tinyml">Dual Core + TinyML</h2>
-<p>We explored a few different methods of object detection since we wanted to first create something that was more customizable rather than using an API so tinyml has a proof of concept for ml sin working on the arduino.  </p>
+<b>Receiver_w_cam.ino</b>
+<p>This file includes both camera detection and posting as well as receiver code for esp now communication and converting speed and direction to robot instructions with move_car. For camera detection we set resolution to 160x120 to not overflow space and base64 encoded each frame before posting to the camera database. Additional parsing was done on the server. 
+The file also included esp now code through OnDataRecv to receive the x,y tilt info and associated stats present in the info variables for direction and speed (which are needed later for moveCar.)    </p>
+<p>Support functions: <b>/arduino/receiver_w_cam/camera_support.h</b>. These include primarily base64 encoder functions. </p>
+<h2 id="dual-core-tinyml">Bonus: TinyML</h2>
+<p>We explored a few different methods of object detection since we wanted to first create something that was more customizable rather than using an API so we tried tinyML. TinyML uses the "Eloquent TinyML" library on the Arduino to do basic detection of objects and other such machine learning tasks. We used their implementation to create our working object detection. However, we ended up shifting to an API because it was too hardware intensive to run on the edge.</p>
 <h2 id="esp32-robot-wifi-scanner-locator-">ESP32 Robot (Wifi-Scanner/Locator)</h2>
 <p>The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
 and
@@ -535,14 +540,14 @@ join between the camera and location data.</p>
 <h2 id="end-to-end-integration-using-the-robot">End to End Integration: Using The Robot</h2>
 <p>TODO. This will come soon.</p>
 <h1 id="historical-notes">Historical Notes</h1>
-<p>We initially thought of making a mostly web-based project involving a swiming mechanic to catch turtles on a web
+<p>We initially thought of making a mostly web-based project involving a swiping mechanic to catch turtles on a web
 client
 by moving the arduino (sort of like nintendo kinect). The design of that idea is fleshed out in the project proposal
 we
 submitted 4 weeks ago. However, Joe and the TAs dissuaded us from pursuing such an idea because doing localization
 of
-the Arduino in 3D space using an IMU is an unsolved problem and beyond our scope. This is why we opted to instead to
-tilt control for a robot.</p>
+the Arduino in 3D space using an IMU is an unsolved problem and beyond our scope. This is why we opted to instead do
+tilt control for our robot. Few of us have Robotics experience and we thought this would be an exciting and fruitful way to learn about it. Fortunately, despite many challenges, we have found it to be so.</p>
 <h1 id="team-members">Team Members</h1>
 <ul>
 <li>Natasha Maniar</li>
