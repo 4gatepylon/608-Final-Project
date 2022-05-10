@@ -1,215 +1,192 @@
-<!-- <head>
-    <style>
-        table {
-            font-family: arial, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            clifford: '#da373d',
+          }
         }
+      }
+    }
+  </script>
+</head>
+<body>
 
-        td,
-        th {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
+<div class="min-h-screen bg-gray-50 py-8 flex flex-col justify-center relative overflow-hidden lg:py-12">
+<img src="https://play.tailwindcss.com/img/beams.jpg" alt="" class="fixed top-48 left-1/2 -translate-x-2/3 -translate-y-1/2 max-w-none" width="1308" />
+<div class="absolute inset-0 bg-[url(https://play.tailwindcss.com/img/grid.svg)] bg-top [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]"></div>
+<div class="relative w-full px-6 py-12 bg-white shadow-xl shadow-slate-700/10 ring-1 ring-gray-900/5 md:max-w-3xl md:mx-auto lg:max-w-4xl lg:pt-16 lg:pb-28">
+      
+<article class="prose prose-slate mx-auto mt-8 lg:prose-lg">
 
-        h2 {
-            font-family: arial, sans-serif;
-        }
-
-        body {
-            padding: 40px;
-        }
-
-        tr:nth-child(even) {
-            background-color: #dddddd;
-        }
-    </style>
-</head> -->
-
-<div style="font-size: 30; font-weight: bold; text-align: center;">Robo Mapped</div>
+<h1 class="text-indigo-800 underline decoration-sky-500">Robo Mapped</h1>
 TODO. We will have a video here soon.
 
-# High Level Overview
-Our goal with this project has been to create a remote control system to remotely explore
+<h2 id="high-level-overview">High Level Overview</h1>
+<p>Our goal with this project has been to create a remote control system to remotely explore
 different areas of campus. This system mainly involves a tilt-based controller built using an Arduino
 in addition to a wheeled robot, which moves can move forwards
 or backwards or turn left or right based on the tilt of the controller. The robot can also
 collect information about the world around it, including camera images, location data, and
 rudimentary object detection for potential future autonomy. We have of course also included
-an intuitive GUI web-client to display much of this data for the purposes of tracking the robot's
-locomotive history as well as its current state.
-
-We envision that our system could be applied to explore dangerous or hard-to-reach areas, though in the
+an intuitive GUI web-client to display much of this data for the purposes of tracking the robot&#39;s
+locomotive history as well as its current state.</p>
+<p>We envision that our system could be applied to explore dangerous or hard-to-reach areas, though in the
 interests of completing a satisfactory integration for the class, we made choices which constrain the
-areas where our robot is effective, such as using the Wifi-Scan Google API from lab to locate the robot.
-
-# Documentation
-
-## Components
-- Robot (Driver/Sensor and Wifi-scanner/Locator)
-- Controller
-- Web Application
-
-## Functionality
-Functionality for our system is fairly intuitive and simple. Users press the start button (button 1) on the
+areas where our robot is effective, such as using the Wifi-Scan Google API from lab to locate the robot.</p>
+<h1 id="documentation">Documentation</h1>
+<h2 id="components">Components</h2>
+<ul>
+<li>Robot (Driver/Sensor and Wifi-scanner/Locator)</li>
+<li>Controller</li>
+<li>Web Application</li>
+</ul>
+<h2 id="functionality">Functionality</h2>
+<p>Functionality for our system is fairly intuitive and simple. Users press the start button (button 1) on the
 controller
 to begin moving the the robot. They then tilt forwards to move the robot forwards, backwards to move backwards, and to
 either
-side to move only one wheel (spinning the robot). ``Forwards'' for the robot always means with respect to its own
+side to move only one wheel (spinning the robot). ``Forwards&#39;&#39; for the robot always means with respect to its own
 direction
 and not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
 movement).
 The user can disable movement by clicking button 1 again. They can open up our website to run the web client to see
 the camera feed from the robot (at a rather slow framerate). On that same website, they can use the top menu bar to
-select whether to switch to a historical map of the robot's trajectory.
-
-### Start Robot Path
-We have an SQLite server on back-end that is updated on a consistent basis by the the robot. Every
+select whether to switch to a historical map of the robot&#39;s trajectory.</p>
+<h3 id="start-robot-path">Start Robot Path</h3>
+<p>We have an SQLite server on back-end that is updated on a consistent basis by the the robot. Every
 couple milliseconds controller-robot system adds the latest kinematic data to the database, while
 the every few seconds the robot performs a wifi scan to update the database with the latest
-location data using a Google API.
-
-### Tilt control- speeds and direction
-We use a linearly interpolated and binned tilt-based controller. We began by modifying the ball simulation lab
+location data using a Google API.</p>
+<h3 id="tilt-control-speeds-and-direction">Tilt control- speeds and direction</h3>
+<p>We use a linearly interpolated and binned tilt-based controller. We began by modifying the ball simulation lab
 code to not use a simulation, but instead simply send its tilt information to another Arduino using a the ESP Now
-module. We were able to use a simple Arduino ``script'' sketch to display the unchanging MAC address of the
-the robot's ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
+module. We were able to use a simple Arduino ``script&#39;&#39; sketch to display the unchanging MAC address of the
+the robot&#39;s ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
 number
 because from experiment we found it to be responsive enough for a user to intuitively control the robot, and slow enough
-to avoid clogging up bandwidth (which we also need for other features, like locating the robot).
-
-### View Camera feed on Server
-We set up an Arducam on the robot to take small pictures of the space facing in front of they robot eery couple seconds.
+to avoid clogging up bandwidth (which we also need for other features, like locating the robot).</p>
+<h3 id="view-camera-feed-on-server">View Camera feed on Server</h3>
+<p>We set up an Arducam on the robot to take small pictures of the space facing in front of they robot eery couple seconds.
 These are streamed up to the web server as base64 which then is stored in a camera database, also in SQLite.
-Fortunately, our photos are small enough to fit.
-
-### View robot paths on server (start a new path)
-We have a database that stores the robot's locations on the MIT campus, as well as in latitude and longitude, the former
+Fortunately, our photos are small enough to fit.</p>
+<h3 id="view-robot-paths-on-server-start-a-new-path-">View robot paths on server (start a new path)</h3>
+<p>We have a database that stores the robot&#39;s locations on the MIT campus, as well as in latitude and longitude, the former
 being similar to the lab. We have a few endpoints for this information. One returns a table of the locations the robot
 visited over time in sequence, just like in the lab. Another, returns a Google Maps map with waypoints where the robot
 visited connected by polylines to provide a more intuitive and aesthetic interface. These are reachable from our
 home
-page, which is served by the 608 server.
-
-### Auto Mode: object detection with camera feed
-The robot is able to detect whether objects are close to it, right in front. This data is meant mainly as an
-exploration of what the robot will need in the future to be fully autonomous.
-
-## System Diagram
-<img src="sys1.png"></img>
-
-## System Layout
-The physical system, barring the infrastructure for the server, is broken up into three pieces: the controller,
-the robot's driver and sensor module, and the robot's wifi-scanning locator module. The robot's two modules are taped to
+page, which is served by the 608 server.</p>
+<h3 id="auto-mode-object-detection-with-camera-feed">Auto Mode: object detection with camera feed</h3>
+<p>The robot is able to detect whether objects are close to it, right in front. This data is meant mainly as an
+exploration of what the robot will need in the future to be fully autonomous.</p>
+<h2 id="system-diagram">System Diagram</h2>
+<p><img src="sys1.png"></img></p>
+<h2 id="system-layout">System Layout</h2>
+<p>The physical system, barring the infrastructure for the server, is broken up into three pieces: the controller,
+the robot&#39;s driver and sensor module, and the robot&#39;s wifi-scanning locator module. The robot&#39;s two modules are taped to
 the
 same chasis as if they were one. The robot has two modules because we
 needed parallel Wifi-scanning due to it being slow and blocking ESP Now communication. We tried GPS and dual-core
-parallelism but it was insufficient. More details on this will be available further below.
-
-### The robot's Wifi-Scanning Module
-The wifi scanning module is basically the same as that from the localization lab. We simply removed all other
+parallelism but it was insufficient. More details on this will be available further below.</p>
+<h3 id="the-robot-s-wifi-scanning-module">The robot&#39;s Wifi-Scanning Module</h3>
+<p>The wifi scanning module is basically the same as that from the localization lab. We simply removed all other
 unecessary
 components. It has an Wifi-enabled ESP32 connected to power and ground contacting our API endpoints on a consistent
-basis.
-
-### The robot's Driver Module
-The robot's driver module is altogether different from anything in any lab. It is connected to a pair of motors which
+basis.</p>
+<h3 id="the-robot-s-driver-module">The robot&#39;s Driver Module</h3>
+<p>The robot&#39;s driver module is altogether different from anything in any lab. It is connected to a pair of motors which
 are
 connected to wheels, all on a chasis which also holds two battery packs: one for the the motors and one for the
-Arduino. We have a motor driver to control the motors and an Arducam to take photos.
-
-### Controller
-The controller is similar to the ball-sim lab but with all unecessary components removed. It has a couple buttons
+Arduino. We have a motor driver to control the motors and an Arducam to take photos.</p>
+<h3 id="controller">Controller</h3>
+<p>The controller is similar to the ball-sim lab but with all unecessary components removed. It has a couple buttons
 (though it only needs one) to enable or disable remote control. On top of this it has an IMU and an ESP32 with
-ESP Now enabled.
-
-## Hardware Layout
-### The Robot (ESP Now Reciever)
-<img src="recv.png"></img>
-
-### Controller
-<img src="send.png"></img>
-
-## Parts List
-- Hobbyist Motors (from TA)
-- Hobbyist Wheels (from TA)
-- Hobbyist Chasis (from TA)
-- AA Battery Pack (from TA)
-- 4x AA 1.5V Batteries
-- Dual Core ESP32S2 Arduino (3x)
-- Camera (ArduCam)
-- Sonar (HCSR04, used for aesthetics)
-- 5v Battery Packs (2x)
-- L298 Motor Driver
-- IMU (MPU 6050)
-- USB and jumper cables
-- Button (From Lab)
-
-## Total Parts Price
-Around $63.31 excluding hardware from class and the motors, wheels, chasis,
+ESP Now enabled.</p>
+<h2 id="hardware-layout">Hardware Layout</h2>
+<h3 id="the-robot-esp-now-reciever-">The Robot (ESP Now Reciever)</h3>
+<p><img src="recv.png"></img></p>
+<h3 id="controller">Controller</h3>
+<p><img src="send.png"></img></p>
+<h2 id="parts-list">Parts List</h2>
+<ul>
+<li>Hobbyist Motors (from TA)</li>
+<li>Hobbyist Wheels (from TA)</li>
+<li>Hobbyist Chasis (from TA)</li>
+<li>AA Battery Pack (from TA)</li>
+<li>4x AA 1.5V Batteries</li>
+<li>Dual Core ESP32S2 Arduino (3x)</li>
+<li>Camera (ArduCam)</li>
+<li>Sonar (HCSR04, used for aesthetics)</li>
+<li>5v Battery Packs (2x)</li>
+<li>L298 Motor Driver</li>
+<li>IMU (MPU 6050)</li>
+<li>USB and jumper cables</li>
+<li>Button (From Lab)</li>
+</ul>
+<h2 id="total-parts-price">Total Parts Price</h2>
+<p>Around $63.31 excluding hardware from class and the motors, wheels, chasis,
 and AA battery pack, which our TA, Amadou, was generously able to lend us
-for the duration of this project.
-
-## Other Components
-- Server (software)
-- ESP Now (built-in to the ESP32S2 Arduino)
-- Dual Core Chip (built-in to the ESP32S2 Arduino)
-
-## Design Challenges and Decisions
-We faced various challenges throughout the design and implementation process.
+for the duration of this project.</p>
+<h2 id="other-components">Other Components</h2>
+<ul>
+<li>Server (software)</li>
+<li>ESP Now (built-in to the ESP32S2 Arduino)</li>
+<li>Dual Core Chip (built-in to the ESP32S2 Arduino)</li>
+</ul>
+<h2 id="design-challenges-and-decisions">Design Challenges and Decisions</h2>
+<p>We faced various challenges throughout the design and implementation process.
 Many of them we were forced to simply work around. They mainly included, but
-were not limited those below.
-
-### Implementation Challenges
-**GPS not working.** We had troubles setting up our GPS. We followed the guide posted on the 6.08 class site, but
+were not limited those below.</p>
+<h3 id="implementation-challenges">Implementation Challenges</h3>
+<p><strong>GPS not working.</strong> We had troubles setting up our GPS. We followed the guide posted on the 6.08 class site, but
 its
 pins were outdated. After discussing with a TA, we were able to find the right pins, but even then it would not
 display
 anything. We tried all permutations of wiring for our GPS module, but were unable to fetch location information even
-with it flashing as if it were functional. For that reason we abandoned GPS in favor of wifi-scanning.
-
-**Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.** Wifi-scanning from the lab
+with it flashing as if it were functional. For that reason we abandoned GPS in favor of wifi-scanning.</p>
+<p><strong>Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.</strong> Wifi-scanning from the lab
 was
 too slow for our needs, since it blocked the robot from acting on controller requests to change speed. For this reason
 we
 first tried using the dual-core functionality of the ESP32S2 Arduino, but it introduced parallelism bugs
 sporadically
 and unpredictably when the Wifi module did a scan to update its information regarding nearby access points (to query
-Google's API with). This forced us to simply use a third Arduino for our location data collection.
-
-**Initial lack of support for react-based web clients on the server.** We really wanted to have a reactive
+Google&#39;s API with). This forced us to simply use a third Arduino for our location data collection.</p>
+<p><strong>Initial lack of support for react-based web clients on the server.</strong> We really wanted to have a reactive
 web-client
 for our application so that we could enable real-time data and control of the robot. However, we had so little control
 over
 the 608 server that at first it was impossible to easily package and serve web clients built with tools like React,
-becuase it didn't support things such as serving images, which were necessary for our app to function. We tried to
+becuase it didn&#39;t support things such as serving images, which were necessary for our app to function. We tried to
 package the app in a single file but it was more of a hassle than necessary, and after wrangling with the PUBLIC_URL
-path in React's build toolchain we were able to serve React from the 608 server.
-
-**Storage space for camera data both on on-board buffers and in the server.** Most image sizes were too big,
+path in React&#39;s build toolchain we were able to serve React from the 608 server.</p>
+<p><strong>Storage space for camera data both on on-board buffers and in the server.</strong> Most image sizes were too big,
 especially
 in base64, to store on the Arduino and send to the server in one request. We also worried at first that these images
 would not fit into our database. Fortunately, this was not the case and we were able to do both of these things by
-picking the smallest possible image size, 160x120.
-
-**Lack of power for a sensor-laden robot.** We were unable to do an end to end test until week 3 of the project
+picking the smallest possible image size, 160x120.</p>
+<p><strong>Lack of power for a sensor-laden robot.</strong> We were unable to do an end to end test until week 3 of the project
 because
 the robot had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack
 through
 the motor driver. Luckily, our order of 5V USB power supplies arrived in time for us to power the Arduino
 independently
 with a power supply and thereby make our robot autonomous (disconneting it from the computer) and able to power its
-sensors.
-
-**JPEG HTML embedding platform differences.** We really struggled to display images because even while decoding them
-into JPGs worked fine on our local computers (using the bash `base64` command), it did not on the server, where we
+sensors.</p>
+<p><strong>JPEG HTML embedding platform differences.</strong> We really struggled to display images because even while decoding them
+into JPGs worked fine on our local computers (using the bash <code>base64</code> command), it did not on the server, where we
 were
 trying to serve an HTML page with base64-embedded JPEGs. After hours of debugging, with TA help, we ended up
 clipping
-arbitrary prefixes and suffixes from the base64 string and found a combination that worked by pure chance.
-
-**Low Camera Framerate.** Because it took the Arduino a lot of work to take the pictures, encode them in base64,
+arbitrary prefixes and suffixes from the base64 string and found a combination that worked by pure chance.</p>
+<p><strong>Low Camera Framerate.</strong> Because it took the Arduino a lot of work to take the pictures, encode them in base64,
 send
 them to the server, await an OK as the server input them into the database, and so forth, the frame rate for our
 camera
@@ -218,70 +195,63 @@ many
 moving objects). The TAs told us that this was as good as we were gonna get from the Arducam with the ESP32, but we
 imagine that with better hardware and some performance optimization (and streaming) it would be possible to have a
 more
-real-time feed.
-
-### Design Decisions
-In addition to the above, we also had to scrap our wish to create gesture control since according to Joe it would be
+real-time feed.</p>
+<h3 id="design-decisions">Design Decisions</h3>
+<p>In addition to the above, we also had to scrap our wish to create gesture control since according to Joe it would be
 too difficult. That information led us to choose tilt control since we had proven, in one of the labs, that it could
-function reasonably well.
-
-Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
+function reasonably well.</p>
+<p>Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
 understand that requiring Wifi is potentially not ideal for the sort of hypothetical scenarios in which a robot like
-The robot would be useful, but understand that to create our MVP it was necessary to use the tools at our disposal.
+The robot would be useful, but understand that to create our MVP it was necessary to use the tools at our disposal.</p>
 
-# Detailed Code Layout
-## Server
-Our server code is seperated into two modules, called `Crud` and `Webpage`, which respectively handle API endpoints
+<h1 id="detailed-code-layout">Detailed Code Layout</h1>
+<h2 id="server">Server</h2>
+<p>Our server code is seperated into two modules, called <code>Crud</code> and <code>Webpage</code>, which respectively handle API endpoints
 to read/write from/to the databases/state and a simple webpage server. We have a request handler which based on the URL
-arguments passed is able to route the request to either Crud or the Webpage's handlers.
-
-The Crud endpoints modify three databases: one for camera data, one for location data, and one for kinematic data.
+arguments passed is able to route the request to either Crud or the Webpage&#39;s handlers.</p>
+<p>The Crud endpoints modify three databases: one for camera data, one for location data, and one for kinematic data.
 We have split it up this way because the modules handling the sending of these different types of data have different
 frequencies at which they send their data. The Crud object implements entirely static methods which are typically
 wrapped in a python SQLite connection and cursor decorator to modify the correct database. Using decorators like this
 along with the static objects was able to make our code a lot cleaner and easier to work with. Below is an example Code
-snippets to give you a sense of what modifiying our databases looks like.
-
-~~~~~~~~~~~
-class Crud(object):
-    LOC_FILE = "/var/jail/home/team10/loc.db" 
+snippets to give you a sense of what modifiying our databases looks like.</p>
+<pre><code class="lang-~~~"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Crud</span><span class="hljs-params">(object)</span>:</span>
+    LOC_FILE = <span class="hljs-string">"/var/jail/home/team10/loc.db"</span> 
     ...
-    
-    def withConnLocCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str]) -> str:
-        """ Wrap your functions in this when you want them to have access to the database"""
-        def wrapper(*args, **kwargs):
+
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">withConnLocCursor</span><span class="hljs-params">(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str])</span> -&gt; str:</span>
+        <span class="hljs-string">""" Wrap your functions in this when you want them to have access to the database"""</span>
+        <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">wrapper</span><span class="hljs-params">(*args, **kwargs)</span>:</span>
             conn = sqlite3.connect(Crud.LOC_FILE)
             c = conn.cursor()
             result = func(c, conn, *args, **kwargs)
             conn.commit()
             conn.close()
-            return result
-        return wrapper
+            <span class="hljs-keyword">return</span> result
+        <span class="hljs-keyword">return</span> wrapper
     ...
 
-    @withConnLocCursor 
-    def handle_whereami(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
-        if not "x" in request["values"] or not "y" in request["values"]:
-            return "Error: please provide x and y"
-        x_str: str = request["values"]["x"]
-        y_str: str = request["values"]["y"]
-        
-        try:
+<span class="hljs-meta">    @withConnLocCursor </span>
+    <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">handle_whereami</span><span class="hljs-params">(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any)</span> -&gt; str:</span>
+        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> <span class="hljs-string">"x"</span> <span class="hljs-keyword">in</span> request[<span class="hljs-string">"values"</span>] <span class="hljs-keyword">or</span> <span class="hljs-keyword">not</span> <span class="hljs-string">"y"</span> <span class="hljs-keyword">in</span> request[<span class="hljs-string">"values"</span>]:
+            <span class="hljs-keyword">return</span> <span class="hljs-string">"Error: please provide x and y"</span>
+        x_str: str = request[<span class="hljs-string">"values"</span>][<span class="hljs-string">"x"</span>]
+        y_str: str = request[<span class="hljs-string">"values"</span>][<span class="hljs-string">"y"</span>]
+
+        <span class="hljs-keyword">try</span>:
             x: float = float(x_str)
             y: float = float(y_str)
             loc: str = GeoFencer.get_area((x, y))
             now = datetime.now()
-            # post to database 
-            c.execute("""CREATE TABLE IF NOT EXISTS loc_data (time_ timestamp, x_x real, y_y real, build text);""")
-            c.execute('''INSERT into loc_data VALUES (?,?,?,?);''', (now, x,y,loc))
-            return loc 
-        except Exception as e:
-            return f"Error: please provide x and y as floats, had error: {e}"
+            <span class="hljs-comment"># post to database </span>
+            c.execute(<span class="hljs-string">"""CREATE TABLE IF NOT EXISTS loc_data (time_ timestamp, x_x real, y_y real, build text);"""</span>)
+            c.execute(<span class="hljs-string">'''INSERT into loc_data VALUES (?,?,?,?);'''</span>, (now, x,y,loc))
+            <span class="hljs-keyword">return</span> loc 
+        <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> e:
+            <span class="hljs-keyword">return</span> f<span class="hljs-string">"Error: please provide x and y as floats, had error: {e}"</span>
     ...
-~~~~~~~~
-
-The following endpoints are available for Crud:
-
+</code></pre>
+<p>The following endpoints are available for Crud:</p>
 <table class="table">
     <tbody>
         <tr>
@@ -291,7 +261,7 @@ The following endpoints are available for Crud:
         </tr>
         <tr>
             <th style="text-align:left"> Kinematic and Location API GET </th>
-            <th style="text-align:left"> Any Value other than "camera," "monalisa," "whereami," or "Wherehaveibeen"
+            <th style="text-align:left"> Any Value other than &quot;camera,&quot; &quot;monalisa,&quot; &quot;whereami,&quot; or &quot;Wherehaveibeen&quot;
             </th>
             <th style="text-align:left"> Get a list of historial location and kinematic data of the robot. </th>
         </tr>
@@ -323,24 +293,22 @@ The following endpoints are available for Crud:
     </tbody>
 </table>
 
-The webpage only has one single meaningful endpoint to return the string representing the `index.html` of our
-webpage. We also have a dummy "mona lisa" endpoint accessible with `?monalisa=1` as a sample of HTML base64 embedding of
+<p>The webpage only has one single meaningful endpoint to return the string representing the <code>index.html</code> of our
+webpage. We also have a dummy &quot;mona lisa&quot; endpoint accessible with <code>?monalisa=1</code> as a sample of HTML base64 embedding of
 images. Note that we had to put the wherehaveibeen endpoint in Crud and not Webpage because it requires reading from the
 database directly. We implemented it as a low-level, simple MVP for localization early on, before we had map
-waypoints.
-
-Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to
-locate the robot on MIT.
-
-## Database Layout
-### Location Database with Example
+waypoints.</p>
+<p>Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to
+locate the robot on MIT.</p>
+<h2 id="database-layout">Database Layout</h2>
+<h3 id="location-database-with-example">Location Database with Example</h3>
 <table class="table">
     <tbody>
         <tr>
-            <th style="text-align:left"> "time_" Time (timestamp)</th>
-            <th style="text-align:left"> "x_x" Latitude (real)</th>
-            <th style="text-align:left"> "y_y" Longitude (real)</th>
-            <th style="text-align:left"> "build" Building (text)</th>
+            <th style="text-align:left"> &quot;time_&quot; Time (timestamp)</th>
+            <th style="text-align:left"> &quot;x_x&quot; Latitude (real)</th>
+            <th style="text-align:left"> &quot;y_y&quot; Longitude (real)</th>
+            <th style="text-align:left"> &quot;build&quot; Building (text)</th>
         </tr>
         <tr>
             <th style="text-align:left"> 2022-05-08 08:15:27.243860 </th>
@@ -351,13 +319,13 @@ locate the robot on MIT.
     </tbody>
 </table>
 
-### Camera Database with Example
+<h3 id="camera-database-with-example">Camera Database with Example</h3>
 <table class="table">
     <tbody>
         <tr>
-            <th style="text-align:left"> "time_" Time (timestamp)</th>
-            <th style="text-align:left"> "image" Image Base64 (text)</th>
-            <th style="text-align:left"> "response" Object Detection Class (text)</th>
+            <th style="text-align:left"> &quot;time_&quot; Time (timestamp)</th>
+            <th style="text-align:left"> &quot;image&quot; Image Base64 (text)</th>
+            <th style="text-align:left"> &quot;response&quot; Object Detection Class (text)</th>
         </tr>
         <tr>
             <th style="text-align:left"> 2022-05-08 08:15:27.243860</th>
@@ -367,17 +335,17 @@ locate the robot on MIT.
     </tbody>
 </table>
 
-### Kinematics Database with Example
+<h3 id="kinematics-database-with-example">Kinematics Database with Example</h3>
 <table class="table">
     <tbody>
         <tr>
-            <th style="text-align:left"> "time_" Time (timestamp)</th>
-            <th style="text-align:left"> "a_x" Tilt x (real)</th>
-            <th style="text-align:left"> "a_y" Tilt y (real)</th>
-            <th style="text-align:left"> "v_x" Deprecated (real)</th>
-            <th style="text-align:left"> "v_y" Deprecated (real)</th>
-            <th style="text-align:left"> "speed" Speed (real)</th>
-            <th style="text-align:left"> "direction" Direction (real)</th>
+            <th style="text-align:left"> &quot;time_&quot; Time (timestamp)</th>
+            <th style="text-align:left"> &quot;a_x&quot; Tilt x (real)</th>
+            <th style="text-align:left"> &quot;a_y&quot; Tilt y (real)</th>
+            <th style="text-align:left"> &quot;v_x&quot; Deprecated (real)</th>
+            <th style="text-align:left"> &quot;v_y&quot; Deprecated (real)</th>
+            <th style="text-align:left"> &quot;speed&quot; Speed (real)</th>
+            <th style="text-align:left"> &quot;direction&quot; Direction (real)</th>
         </tr>
         <tr>
             <th style="text-align:left"> 2022-05-08 08:15:27.243860</th>
@@ -386,52 +354,44 @@ locate the robot on MIT.
             <th style="text-align:left"> 0 </th>
             <th style="text-align:left"> 0 </th>
             <th style="text-align:left"> 75</th>
-            <th style="text-align:left"> "1 </th>
+            <th style="text-align:left"> &quot;1 </th>
         </tr>
     </tbody>
 </table>
 
-## Web Client
-### React
-We were able to use ReactJS with Typescript to create an aesthetic and reactive experience for the users of our webpage.
+<h2 id="web-client">Web Client</h2>
+<h3 id="react">React</h3>
+<p>We were able to use ReactJS with Typescript to create an aesthetic and reactive experience for the users of our webpage.
 Our main components are a map, a plotter of tilt and kinematic data, and a camera handler that shows a historical,
 real-time view of the camera feed from the robot. The map communicates with a Google API for maps to enable us to place
-pins and create paths, which helps visualize what the robot does.
-
-The other major advantage of React is that enables us to do single-page routing. This is ideal for us because deployment
+pins and create paths, which helps visualize what the robot does.</p>
+<p>The other major advantage of React is that enables us to do single-page routing. This is ideal for us because deployment
 on the python server (which is not meant to serve multipage applications) was non-trivial, and thus having a stateful
-single-page application handles theseengineering challenges on the client side more easily.
-
-### Layout Handling
-We used Tailwind CSS to generate utility classes which handle all of the styling on the webpages. Tailwind CSS is unique
-in that it helped with tricky layout handling for the canvas, especially the Google API map.
-
-### Deployment
-The main insight for deploying reactive applications using a build tool like webpack from the 6.08 server is that you
+single-page application handles theseengineering challenges on the client side more easily.</p>
+<h3 id="layout-handling">Layout Handling</h3>
+<p>We used Tailwind CSS to generate utility classes which handle all of the styling on the webpages. Tailwind CSS is unique
+in that it helped with tricky layout handling for the canvas, especially the Google API map.</p>
+<h3 id="deployment">Deployment</h3>
+<p>The main insight for deploying reactive applications using a build tool like webpack from the 6.08 server is that you
 need to staticaly bundle everything somewhere where it can be reached, an then you need to change the paths in your
 javascript file to include the full path on the 6.08 server. We were able to do this by changing environment variables
 in a secrets file. Changing the secrets file is also important because if students are using an API key like we were for
 the Google Map, then it is important that they avoid writing it in their javascript file due to security concerns. This
-is not obvious to someone new to web development, but it is important to understand.
-
-### Challenges
-We wish we'd had Git or in general version control already built-in to the server so that we could collaborate more
+is not obvious to someone new to web development, but it is important to understand.</p>
+<h3 id="challenges">Challenges</h3>
+<p>We wish we&#39;d had Git or in general version control already built-in to the server so that we could collaborate more
 easily there. This is meaningful because we needed to test both our front-end and back-end in real time to debug and we
-ran into issues due to people pushing things to production randomly for the purposes of testing.
-
-Another major challenge was synchronizing the location stream and the images from the database without taking too long
+ran into issues due to people pushing things to production randomly for the purposes of testing.</p>
+<p>Another major challenge was synchronizing the location stream and the images from the database without taking too long
 and blocking on the client. We were able to surmount this by lowering the frequency of updates on the client, which
-fortunately was not perceptibly slower (due to the camera being, in itself, slow).
-
-Lastly, we had to work around bugs involving react's native BrowserRouter, because we couldn't use paths ont the client.
-Instead, we used a state machine (similar to those we've seen throughout the class) to select which page to show. Each
+fortunately was not perceptibly slower (due to the camera being, in itself, slow).</p>
+<p>Lastly, we had to work around bugs involving react&#39;s native BrowserRouter, because we couldn&#39;t use paths ont the client.
+Instead, we used a state machine (similar to those we&#39;ve seen throughout the class) to select which page to show. Each
 page has a state (roughly) and each state transitions to each other using a button in the header of our web client. We
-conditionally render based on the state.
-
-## ESP32 Controller (Sender)
-Sender.ino: /arduino/sender/sender.ino
-
-Sender.ino: /arduino/sender/sender.ino
+conditionally render based on the state.</p>
+<h2 id="esp32-controller-sender-">ESP32 Controller (Sender)</h2>
+<p>Sender.ino: /arduino/sender/sender.ino</p>
+<p>Sender.ino: /arduino/sender/sender.ino
 The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
@@ -441,165 +401,148 @@ to be on-board in the robot, we were able to just handle ESP Now messaging. Ever
 so
 forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP = 1, DOWN
 = 2,
-LEFT = 3, RIGHT = 4, for the purpose of keeping a de-noised experience; we also have NONE signifying not moving).
-
-The `OnDataSent` function is a callback which ESP Now calls when it successfully sends a message. It is used to
+LEFT = 3, RIGHT = 4, for the purpose of keeping a de-noised experience; we also have NONE signifying not moving).</p>
+<p>The <code>OnDataSent</code> function is a callback which ESP Now calls when it successfully sends a message. It is used to
 inform
 the user through the Serial console (if present) that data was successfully sent (which is important for debugging),
 but
-is otherwise not that important. The functions `get_direction`, `get_speed`, and `get_angle` turn tilt data into a
+is otherwise not that important. The functions <code>get_direction</code>, <code>get_speed</code>, and <code>get_angle</code> turn tilt data into a
 direction and a speed for that direction. As previously mentioned there are four directions for the four rays coming
 out
 of the origin of the four axis on the 2D plane corresponding to the birds-eye view of the ground. We also have a
 functionality to print these kinematics data to the TFT so the user can know how they are conrolling the robot (for
-example if it's far away).
-
-We bin our speeds into 4 bins based on a linear mapping from the range of tilts (between 0 and 1G) and the range of
+example if it&#39;s far away).</p>
+<p>We bin our speeds into 4 bins based on a linear mapping from the range of tilts (between 0 and 1G) and the range of
 speeds (between 0 and 100 in a unit pre-determined by our motor driver). This is similar to the work done in the
 Napster
-lab for the notes, except the function is in fact purely linear.
-
-## ESP32 Robot (Driver and Sensor)
-Receiver_w_cam.ino
-
-This file includes both camera detection and posting as well as receiver code for esp now communication and converting speed, direction to robot instructions with move_car. For camera detection we set resolution to 160x120 to not overflow space and base64 encoded each frame before posting to the camera database. Additional parsing was done on the server. 
-The file also included esp now code through OnDataRecv to receive the x,y tilt info but also associated stats through the info variables which contains direction and speed- later passed into moveCar.    
-                
-Support functions: /arduino/receiver_w_cam/camera_support.h. Support functions for camera so includes base_64 encoding helper functions from lab. 
-
-
-## Dual Core + TinyML
-We explored a few different methods of object detection since we wanted to first create something that was more customizable rather than using an API so tinyml has a proof of concept for ml sin working on the arduino.  
-
-## ESP32 Robot (Wifi-Scanner/Locator)
-The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
+lab for the notes, except the function is in fact purely linear.</p>
+<h2 id="esp32-robot-driver-and-sensor-">ESP32 Robot (Driver and Sensor)</h2>
+<p>Receiver_w_cam.ino</p>
+<p>This file includes both camera detection and posting as well as receiver code for esp now communication and converting speed, direction to robot instructions with move_car. For camera detection we set resolution to 160x120 to not overflow space and base64 encoded each frame before posting to the camera database. Additional parsing was done on the server. 
+The file also included esp now code through OnDataRecv to receive the x,y tilt info but also associated stats through the info variables which contains direction and speed- later passed into moveCar.    </p>
+<p>Support functions: /arduino/receiver_w_cam/camera_support.h. Support functions for camera so includes base_64 encoding helper functions from lab. </p>
+<h2 id="dual-core-tinyml">Dual Core + TinyML</h2>
+<p>We explored a few different methods of object detection since we wanted to first create something that was more customizable rather than using an API so tinyml has a proof of concept for ml sin working on the arduino.  </p>
+<h2 id="esp32-robot-wifi-scanner-locator-">ESP32 Robot (Wifi-Scanner/Locator)</h2>
+<p>The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
 and
-then send it to the Google API at `https://www.googleapis.com/geolocation/v1/geolocate` with the key provided to us
+then send it to the Google API at <code>https://www.googleapis.com/geolocation/v1/geolocate</code> with the key provided to us
 in
-one of the labs. Once it is done with this, it sends a request to our backend to update our locations database.
-
-# Milestone Videos
-## Week 1
-### ESP Now
-<a href="https://youtube.com/shorts/_qTj1VqcwLc?feature=share">Short is available here.</a>
-For some reason Youtube kept insisting that we make this a short.
-
-### Database
-<a href="https://youtube.com/shorts/Jvd1F6fFxmg?feature=share">Short is available here.</a>
-For some reason Youtube kept insisting that we make this a short.
-
-### (Development) Website
-<a href="https://youtube.com/shorts/j2ca18ya4Ws?feature=share">Short is available here.</a>
-For some reason Youtube kept insisting that we make this a short.
-
-### Typescript and Better Plotting
+one of the labs. Once it is done with this, it sends a request to our backend to update our locations database.</p>
+<h1 id="milestone-videos">Milestone Videos</h1>
+<h2 id="week-1">Week 1</h2>
+<h3 id="esp-now">ESP Now</h3>
+<p><a class="underline decoration-indigo-400" href="https://youtube.com/shorts/_qTj1VqcwLc?feature=share">Short is available here.</a>
+For some reason Youtube kept insisting that we make this a short.</p>
+<h3 id="database">Database</h3>
+<p><a class="underline decoration-indigo-400" href="https://youtube.com/shorts/Jvd1F6fFxmg?feature=share">Short is available here.</a>
+For some reason Youtube kept insisting that we make this a short.</p>
+<h3 id="-development-website">(Development) Website</h3>
+<p><a class="underline decoration-indigo-400" href="https://youtube.com/shorts/j2ca18ya4Ws?feature=share">Short is available here.</a>
+For some reason Youtube kept insisting that we make this a short.</p>
+<h3 id="typescript-and-better-plotting">Typescript and Better Plotting</h3>
 <!-- who the heck uses loom though -->
-<div style="position: relative; padding-bottom: 64.5933014354067%; height: 0;"><iframe
+<div style="position: relative; padding-bottom: 64.5933014354067%; height: 0;"><iframe class="w-full aspect-video" 
         src="https://www.loom.com/embed/9cb2908149bb456d852604ae41a1b3b7" frameborder="0" webkitallowfullscreen
         mozallowfullscreen allowfullscreen
         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
-## Week 2
-### (Production) Website
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rjyxQVHdtcE" title="YouTube video player"
+<h2 id="week-2">Week 2</h2>
+<h3 id="-production-website">(Production) Website</h3>
+<iframe class="w-full aspect-video" width="560" height="315" src="https://www.youtube.com/embed/rjyxQVHdtcE" title="YouTube video player"
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Locating App in MIT using Wifi and Google API
-<iframe width="560" height="315" src="https://www.youtube.com/embed/FPgzCNh0eX4" title="YouTube video player"
+<h3 id="locating-app-in-mit-using-wifi-and-google-api">Locating App in MIT using Wifi and Google API</h3>
+<iframe class="w-full aspect-video" width="560" height="315" src="https://www.youtube.com/embed/FPgzCNh0eX4" title="YouTube video player"
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Path on Webserver
-<iframe width="560" height="315" src="https://www.youtube.com/embed/RTUxWQrvx-w" title="YouTube video player"
+<h3 id="path-on-webserver">Path on Webserver</h3>
+<iframe class="w-full aspect-video" width="560" height="315" src="https://www.youtube.com/embed/RTUxWQrvx-w" title="YouTube video player"
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Moving Robot's Wheels (Non-Autonomous)
-This got like 400 views on Youtube.
-<iframe
+<h3 id="moving-robot-s-wheels-non-autonomous-">Moving Robot&#39;s Wheels (Non-Autonomous)</h3>
+<p>This got like 400 views on Youtube.</p>
+<iframe class="w-full aspect-video" 
     src="https://player.vimeo.com/video/707954511?h=92e5081bfd&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-    width="325" height="578" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+    frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
     title="wheels1.MOV"></iframe>
 
-## Week 3
-### Binned Speeds
-<iframe width="560" height="315" src="https://www.youtube.com/embed/lkiynghh2tU" title="YouTube video player"
+<h2 id="week-3">Week 3</h2>
+<h3 id="binned-speeds">Binned Speeds</h3>
+<iframe class="w-full aspect-video"  width="560" height="315" src="https://www.youtube.com/embed/lkiynghh2tU" title="YouTube video player"
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Moving The robot (Autonomous)
-<iframe
+<h3 id="moving-the-robot-autonomous-">Moving The robot (Autonomous)</h3>
+<iframe class="w-full aspect-video" 
     src="https://player.vimeo.com/video/707954440?h=c64497cc93&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
-    width="325" height="578" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+    frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
     title="integrated.MOV"></iframe>
 
-### React Router and Porting to React
-
-<iframe src="https://drive.google.com/file/d/19HDeVBCRObiUB72gXjIIG6Xk1g50N2y0/preview" width="640" height="480"
+<h3 id="react-router-and-porting-to-react">React Router and Porting to React</h3>
+<iframe class="w-full aspect-video"  src="https://drive.google.com/file/d/19HDeVBCRObiUB72gXjIIG6Xk1g50N2y0/preview" width="640" height="480"
     allow="autoplay"></iframe>
 
-### Camera Feed On Website
-<div style="position: relative; padding-bottom: 62.5%; height: 0;"><iframe
+<h3 id="camera-feed-on-website">Camera Feed On Website</h3>
+<div style="position: relative; padding-bottom: 62.5%; height: 0;">
+    <iframe class="w-full aspect-video" 
         src="https://www.loom.com/embed/e42725fd7e3c4c4d9e5d2d0830054df8" frameborder="0" webkitallowfullscreen
         mozallowfullscreen allowfullscreen
         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
-<iframe src="https://drive.google.com/file/d/1iCJSLg03OSt5NRfpT1u9LspFbheg6mrJ/preview" width="640" height="480"
+<iframe class="w-full aspect-video"  src="https://drive.google.com/file/d/1iCJSLg03OSt5NRfpT1u9LspFbheg6mrJ/preview" width="640" height="480"
     allow="autoplay"></iframe>
 
-## Week 4
-### Robot Localization (from Robot) using GPS or Alternative Method
-You can find our short <a href="https://www.youtube.com/shorts/DohrP9NixmE">here</a>.
-
-### Dynamic Camera Feed
-We have a dynamic camera feed available in the website we made. It is created by doing a, metaphorically speaking, inner
-join between the camera and location data.
-
-<div style="position: relative; padding-bottom: 62.5%; height: 0;"><iframe
+<h2 id="week-4">Week 4</h2>
+<h3 id="robot-localization-from-robot-using-gps-or-alternative-method">Robot Localization (from Robot) using GPS or Alternative Method</h3>
+<p>You can find our short <a class="underline decoration-indigo-400" href="https://www.youtube.com/shorts/DohrP9NixmE">here</a>.</p>
+<h3 id="dynamic-camera-feed">Dynamic Camera Feed</h3>
+<p>We have a dynamic camera feed available in the website we made. It is created by doing a, metaphorically speaking, inner
+join between the camera and location data.</p>
+<div style="position: relative; padding-bottom: 62.5%; height: 0;">
+    <iframe class="w-full aspect-video" 
         src="https://www.loom.com/embed/352e227e9c99414fab7271bbdc71d600" frameborder="0" webkitallowfullscreen
         mozallowfullscreen allowfullscreen
         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
 
-We also have the integrated behavior here:
-<iframe src="https://drive.google.com/file/d/1swHPeBE5sORZbmmahVKGt5c6eY5GmhDY/preview" width="640" height="480"
+<p>We also have the integrated behavior here:</p>
+<iframe class="w-full aspect-video" src="https://drive.google.com/file/d/1swHPeBE5sORZbmmahVKGt5c6eY5GmhDY/preview" width="640" height="480"
     allow="autoplay"></iframe>
 
-### Paths Travelled on Database
-<iframe width="560" height="315" src="https://www.youtube.com/embed/VZjazDh3RV4" title="YouTube video player"
+<h3 id="paths-travelled-on-database">Paths Travelled on Database</h3>
+<iframe class="w-full aspect-video"  width="560" height="315" src="https://www.youtube.com/embed/VZjazDh3RV4" title="YouTube video player"
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Object Detection and Display
-<iframe src="https://drive.google.com/file/d/1RZgU-t1SUoRDS1I6tiApG_-eogOuQYkN/preview" width="640" height="480"
+<h3 id="object-detection-and-display">Object Detection and Display</h3>
+<iframe class="w-full aspect-video"  src="https://drive.google.com/file/d/1RZgU-t1SUoRDS1I6tiApG_-eogOuQYkN/preview" width="640" height="480"
     allow="autoplay"></iframe>
 
-## End to End Integration: Using The Robot
-TODO. This will come soon.
-
-# Historical Notes
-We initially thought of making a mostly web-based project involving a swiming mechanic to catch turtles on a web
+<h2 id="end-to-end-integration-using-the-robot">End to End Integration: Using The Robot</h2>
+<p>TODO. This will come soon.</p>
+<h1 id="historical-notes">Historical Notes</h1>
+<p>We initially thought of making a mostly web-based project involving a swiming mechanic to catch turtles on a web
 client
 by moving the arduino (sort of like nintendo kinect). The design of that idea is fleshed out in the project proposal
 we
 submitted 4 weeks ago. However, Joe and the TAs dissuaded us from pursuing such an idea because doing localization
 of
 the Arduino in 3D space using an IMU is an unsolved problem and beyond our scope. This is why we opted to instead to
-tilt control for a robot.
+tilt control for a robot.</p>
+<h1 id="team-members">Team Members</h1>
+<ul>
+<li>Natasha Maniar</li>
+<li>Adriano Hernandez</li>
+<li>Sualeh Asif</li>
+<li>Daniela Velez</li>
+</ul>
 
-# Team Members
-- Natasha Maniar
-- Adriano Hernandez
-- Sualeh Asif
-- Daniela Velez
-<!-- Markdeep: -->
-<style class="fallback">
-    body {
-        visibility: hidden;
-        white-space: pre;
-        font-family: monospace
-    }
-</style>
-<script src="markdeep.min.js"></script>
-<script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script>
-<script>window.alreadyProcessedMarkdeep || (document.body.style.visibility = "visible")</script>
+</article>
+
+</div>
+</div>
+</body>
+</html>
