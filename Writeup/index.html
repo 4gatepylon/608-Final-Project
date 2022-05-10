@@ -27,22 +27,22 @@
     </style>
 </head> -->
 
-<div style="font-size: 30; font-weight: bold; text-align: center;">Infinite Rover</div>
+<div style="font-size: 30; font-weight: bold; text-align: center;">Robo Mapped</div>
 TODO. We will have a video here soon.
 
 # High Level Overview
 Our goal with this project has been to create a remote control system to remotely explore
 different areas (on earth). This system mainly involves a tilt-based controller built using an Arduino
-in addition to a wheeled robot, our affectionately named Rover, which moves can move forwards
-or backwards or turn left or right based on the tilt of the controller. Rover can also
+in addition to a wheeled robot, which moves can move forwards
+or backwards or turn left or right based on the tilt of the controller. The robot can also
 collect information about the world around it, including camera images, location data, and
 rudimentary object detection for potential future autonomy. We have of course also included
-an intuitive GUI web-client to display much of this data for the purposes of tracking Rover's
+an intuitive GUI web-client to display much of this data for the purposes of tracking the robot's
 locomotive history as well as its current state.
 
 We envision that our system could be applied to explore dangerous or hard-to-reach areas, though in the
 interests of completing a satisfactory integration for the class, we made choices which constrain the
-areas where our robot is effective, such as using the Wifi-Scan Google API from lab to locate Rover.
+areas where our robot is effective, such as using the Wifi-Scan Google API from lab to locate the robot.
 
 # Documentation
 
@@ -54,9 +54,10 @@ areas where our robot is effective, such as using the Wifi-Scan Google API from 
 ## Functionality
 Functionality for our system is fairly intuitive and simple. Users press the start button (button 1) on the
 controller
-to begin moving the Rover. They then tilt forwards to move Rover forwards, backwards to move backwards, and to
+to begin moving the the robot. They then tilt forwards to move the robot forwards, backwards to move backwards, and to
 either
-side to move only one wheel (spinning Rover). "Forwards" for Rover always means with respect to its own direction
+side to move only one wheel (spinning the robot). "Forwards" for the robot always means with respect to its own
+direction
 and
 not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
 movement).
@@ -65,55 +66,56 @@ the camera feed from the robot (at a rather slow framerate). On that same websit
 select whether to switch to a historical map of the robot's trajectory.
 
 ### Start Robot Path
-We have an SQLite server on back-end that is updated on a consistent basis by the Rover. Every
-couple milliseconds controller-rover system adds the latest kinematic data to the database, while
-the every few seconds Rover performs a wifi scan to update the database with the latest
+We have an SQLite server on back-end that is updated on a consistent basis by the the robot. Every
+couple milliseconds controller-robot system adds the latest kinematic data to the database, while
+the every few seconds the robot performs a wifi scan to update the database with the latest
 location data using a Google API.
 
 ### Tilt control- speeds and direction
 We use a linearly interpolated and binned tilt-based controller. We began by modifying the ball simulation lab
 code to not use a simulation, but instead simply send its tilt information to another Arduino using a the ESP Now
 module. We were able to use a simple Arduino ``script'' sketch to display the unchanging MAC address of the
-Rover's ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
+the robot's ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
 number
-because from experiment we found it to be responsive enough for a user to intuitively control Rover, and slow enough
-to avoid clogging up bandwidth (which we also need for other features, like locating Rover).
+because from experiment we found it to be responsive enough for a user to intuitively control the robot, and slow enough
+to avoid clogging up bandwidth (which we also need for other features, like locating the robot).
 
 ### View Camera feed on Server
-We set up an Arducam on Rover to take small pictures of the space facing in front of they robot eery couple seconds.
+We set up an Arducam on the robot to take small pictures of the space facing in front of they robot eery couple seconds.
 These are streamed up to the web server as base64 which then is stored in a camera database, also in SQLite.
 Fortunately, our photos are small enough to fit.
 
 ### View robot paths on server (start a new path)
-We have a database that stores Rover's locations on the MIT campus, as well as in latitude and longitude, the former
-being similar to the lab. We have a few endpoints for this information. One returns a table of the locations Rover
-visited over time in sequence, just like in the lab. Another, returns a Google Maps map with waypoints where Rover
+We have a database that stores the robot's locations on the MIT campus, as well as in latitude and longitude, the former
+being similar to the lab. We have a few endpoints for this information. One returns a table of the locations the robot
+visited over time in sequence, just like in the lab. Another, returns a Google Maps map with waypoints where the robot
 visited connected by polylines to provide a more intuitive and aesthetic interface. These are reachable from our
 home
 page, which is served by the 608 server.
 
 ### Auto Mode: object detection with camera feed
-Rover is able to detect whether objects are close to it, right in front. This data is meant mainly as an
-exploration of what Rover will need in the future to be fully autonomous.
+The robot is able to detect whether objects are close to it, right in front. This data is meant mainly as an
+exploration of what the robot will need in the future to be fully autonomous.
 
 ## System Diagram
 TODO
 
 ## System Layout
 The physical system, barring the infrastructure for the server, is broken up into three pieces: the controller,
-Rover's driver and sensor module, and Rover's wifi-scanning locator module. Rover's two modules are taped to the
-same chasis as if they were one. Rover has two modules because we
+the robot's driver and sensor module, and the robot's wifi-scanning locator module. The robot's two modules are taped to
+the
+same chasis as if they were one. The robot has two modules because we
 needed parallel Wifi-scanning due to it being slow and blocking ESP Now communication. We tried GPS and dual-core
 parallelism but it was insufficient. More details on this will be available further below.
 
-### Rover's Wifi-Scanning Module
+### The robot's Wifi-Scanning Module
 The wifi scanning module is basically the same as that from the localization lab. We simply removed all other
 unecessary
 components. It has an Wifi-enabled ESP32 connected to power and ground contacting our API endpoints on a consistent
 basis.
 
-### Rover's Driver Module
-Rover's driver module is altogether different from anything in any lab. It is connected to a pair of motors which
+### The robot's Driver Module
+The robot's driver module is altogether different from anything in any lab. It is connected to a pair of motors which
 are
 connected to wheels, all on a chasis which also holds two battery packs: one for the the motors and one for the
 Arduino. We have a motor driver to control the motors and an Arducam to take photos.
@@ -124,10 +126,10 @@ The controller is similar to the ball-sim lab but with all unecessary components
 ESP Now enabled.
 
 ## Hardware Layout
-### Rover's Wifi-Scanning Module
+### The robot's Wifi-Scanning Module
 TODO: there should be a system diagram here.
 
-### Rover's Driver Module
+### The robot's Driver Module
 TODO: there should be a system diagram here.
 
 ### Controller
@@ -173,7 +175,7 @@ with it flashing as if it were functional. For that reason we abandoned GPS in f
 
 **Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.** Wifi-scanning from the lab
 was
-too slow for our needs, since it blocked Rover from acting on controller requests to change speed. For this reason
+too slow for our needs, since it blocked the robot from acting on controller requests to change speed. For this reason
 we
 first tried using the dual-core functionality of the ESP32S2 Arduino, but it introduced parallelism bugs
 sporadically
@@ -182,7 +184,7 @@ Google's API with). This forced us to simply use a third Arduino for our locatio
 
 **Initial lack of support for react-based web clients on the server.** We really wanted to have a reactive
 web-client
-for our application so that we could enable real-time data and control of Rover. However, we had so little control
+for our application so that we could enable real-time data and control of the robot. However, we had so little control
 over
 the 608 server that at first it was impossible to easily package and serve web clients built with tools like React,
 becuase it didn't support things such as serving images, which were necessary for our app to function. We tried to
@@ -195,9 +197,9 @@ in base64, to store on the Arduino and send to the server in one request. We als
 would not fit into our database. Fortunately, this was not the case and we were able to do both of these things by
 picking the smallest possible image size, 160x120.
 
-**Lack of power for a sensor-laden Rover.** We were unable to do an end to end test until week 3 of the project
+**Lack of power for a sensor-laden robot.** We were unable to do an end to end test until week 3 of the project
 because
-Rover had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack
+the robot had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack
 through
 the motor driver. Luckily, our order of 5V USB power supplies arrived in time for us to power the Arduino
 independently
@@ -229,7 +231,7 @@ function reasonably well.
 
 Our implementation challenges are what led us to choose wifi-scanning over GPS as our localization technique. We
 understand that requiring Wifi is potentially not ideal for the sort of hypothetical scenarios in which a robot like
-Rover would be useful, but understand that to create our MVP it was necessary to use the tools at our disposal.
+The robot would be useful, but understand that to create our MVP it was necessary to use the tools at our disposal.
 
 # Detailed Code Layout
 ## Server
@@ -257,7 +259,7 @@ available:
             <th style="text-align:left"> Kinematic and Location API GET </th>
             <th style="text-align:left"> Any Value other than "camera," "monalisa," "whereami," or "Wherehaveibeen"
             </th>
-            <th style="text-align:left"> Get a list of historial location and kinematic data of Rover. </th>
+            <th style="text-align:left"> Get a list of historial location and kinematic data of the robot. </th>
         </tr>
         <tr>
             <th style="text-align:left"> Kinematic and Location API POST </th>
@@ -372,8 +374,8 @@ The ESP32S2 controller is fortunately one of the simpler Arduino implementations
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
 that
-to be on-board in Rover, we were able to just handle ESP Now messaging. Every 80ms, our code simply gets the tilt
-(corresponding to speed), processes it, then sends it to Rover (with some additional data like direction, angle, and
+to be on-board in the robot, we were able to just handle ESP Now messaging. Every 80ms, our code simply gets the tilt
+(corresponding to speed), processes it, then sends it to the robot (with some additional data like direction, angle, and
 so
 forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP = 1, DOWN
 = 2,
@@ -396,7 +398,7 @@ Napster
 lab for the notes, except the function is in fact purely linear.
 
 ## ESP32 Robot (Driver and Sensor)
-Rover's code for the driver and sensor. TODO.
+The robot's code for the driver and sensor. TODO.
 
 ## ESP32 Robot (Wifi-Scanner/Locator)
 The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
@@ -455,7 +457,7 @@ This got like 400 views on Youtube.
     frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
     allowfullscreen></iframe>
 
-### Moving Rover (Autonomous)
+### Moving The robot (Autonomous)
 <iframe
     src="https://player.vimeo.com/video/707954440?h=c64497cc93&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"
     width="325" height="578" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
@@ -477,18 +479,31 @@ This got like 400 views on Youtube.
 
 ## Week 4 - TODO
 ### Robot Localization (from Robot) using GPS or Alternative Method
-You can find our short here: <a href="https://www.youtube.com/shorts/DohrP9NixmE"></a>
+You can find our short <a href="https://www.youtube.com/shorts/DohrP9NixmE">here</a>.
 
 ### Dynamic Camera Feed
-TODO. This will come soon.
+We have a dynamic camera feed available in the website we made. It is created by doing a, metaphorically speaking, inner
+join between the camera and location data.
+
+<div style="position: relative; padding-bottom: 62.5%; height: 0;"><iframe
+        src="https://www.loom.com/embed/352e227e9c99414fab7271bbdc71d600" frameborder="0" webkitallowfullscreen
+        mozallowfullscreen allowfullscreen
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe></div>
+
+We also have the integrated behavior here:
+<iframe src="https://drive.google.com/file/d/1swHPeBE5sORZbmmahVKGt5c6eY5GmhDY/preview" width="640" height="480"
+    allow="autoplay"></iframe>
 
 ### Paths Travelled on Database
-TODO. This will come soon.
+<iframe width="560" height="315" src="https://www.youtube.com/embed/VZjazDh3RV4" title="YouTube video player"
+    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen></iframe>
 
-### Pop-up Location Image Pins
-TODO. This will come soon.
+### Object Detection and Display
+<iframe src="https://drive.google.com/file/d/1RZgU-t1SUoRDS1I6tiApG_-eogOuQYkN/preview" width="640" height="480"
+    allow="autoplay"></iframe>
 
-### End to End Integration: Using Rover
+## End to End Integration: Using The Robot
 TODO. This will come soon.
 
 # Historical Notes
