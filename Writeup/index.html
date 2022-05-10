@@ -158,18 +158,21 @@ we
 first tried using the dual-core functionality of the ESP32S2 Arduino, but it introduced parallelism bugs
 sporadically
 and unpredictably when the Wifi module did a scan to update its information regarding nearby access points (to query
-Google&#39;s API with). This forced us to simply use a third Arduino for our location data collection.</p>
-<p><strong>Initial lack of support for react-based web clients on the server.</strong> We really wanted to have a reactive
-web-client
-for our application so that we could enable real-time data and control of the robot. However, we had so little control
-over
-the 608 server that at first it was impossible to easily package and serve web clients built with tools like React,
-becuase it didn&#39;t support things such as serving images, which were necessary for our app to function. We tried to
-package the app in a single file but it was more of a hassle than necessary, and after wrangling with the PUBLIC_URL
-path in React&#39;s build toolchain we were able to serve React from the 608 server.</p>
+Google's API with). This forced us to simply use a third Arduino for our location data collection.</p>
+
+<p><strong>Using a react-based web client on the server.</strong> Our goal was to create a reactive
+web-client for our application so that we could enable real-time data and control of the robot. 
+However, we had to create a client-server system that would be compatible with the 6.08 server, which
+has certain limitations in which content type it can serve. We initially tried to use an HTML file and inject 
+Javascript with our main app React code, but we realized that we had to provide access to other Javascript files 
+to support React functionality such as state management and styling. Our next attempt involved using "bundle" commands
+in order to bundle all our React files into one file that could be server on the server. This did not work either, so 
+we decided to look into features that React provides for this purpose. In doing that, we learned that React "build"
+packages the app in a single file and provides a PUBLIC_URL to access it at. With this, we were able to access
+the public build from the 6.08 server, and serve our entire app, including different routes, files, and packages. </p>
+
 <p><strong>Storage space for camera data both on on-board buffers and in the server.</strong> Most image sizes were too big,
-especially
-in base64, to store on the Arduino and send to the server in one request. We also worried at first that these images
+especially in base64, to store on the Arduino and send to the server in one request. We also worried at first that these images
 would not fit into our database. Fortunately, this was not the case and we were able to do both of these things by
 picking the smallest possible image size, 160x120.</p>
 <p><strong>Lack of power for a sensor-laden robot.</strong> We were unable to do an end to end test until week 3 of the project
@@ -178,14 +181,22 @@ the robot had too many sensors to power them all in addition to the motors, even
 through
 the motor driver. Luckily, our order of 5V USB power supplies arrived in time for us to power the Arduino
 independently
-with a power supply and thereby make our robot autonomous (disconneting it from the computer) and able to power its
+with a power supply and thereby make our robot autonomous (disconnecting it from the computer) and able to power its
 sensors.</p>
-<p><strong>JPEG HTML embedding platform differences.</strong> We really struggled to display images because even while decoding them
-into JPGs worked fine on our local computers (using the bash <code>base64</code> command), it did not on the server, where we
-were
-trying to serve an HTML page with base64-embedded JPEGs. After hours of debugging, with TA help, we ended up
-clipping
-arbitrary prefixes and suffixes from the base64 string and found a combination that worked by pure chance.</p>
+
+<p><strong>JPEG HTML embedding</strong> We encountered challenges in serving images on our front-end from the database, which 
+were even harder to tackle because of the variety of software and hardware components involved in this feature.
+We initially confirmed that the Arduino camera was properly taking images by decoding the base64 image strings
+on our local computers and successfully viewing the images. However, our HTML server would attempt to decode
+the same image strings and would not render a valid image. We debugged this by using our browser console and 
+adapting the image data source component to include or exclude different sections, such as content-type specifications 
+and other attributes. We started to clip certain parts of the base64 data string itself, since we noticed it had 
+extraneous characters at the beginning or end. We eventually found that our hardware code was storing image data strings 
+with padding characters at the end, separated by a "=" symbol from the rest of the valid base64 characters. For some 
+reason, our local file server was able to parse these anyways, but our HTMl server would not render the image with this 
+suffix. Finally, we implemented parsing code to make sure the front-end server is receiving valid <code>base64</code> image 
+source strings from the database.</p>
+
 <p><strong>Low Camera Framerate.</strong> Because it took the Arduino a lot of work to take the pictures, encode them in base64,
 send
 them to the server, await an OK as the server input them into the database, and so forth, the frame rate for our

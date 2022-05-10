@@ -463,19 +463,23 @@ class Crud(object):
         loc_conn = sqlite3.connect(Crud.LOC_FILE)
         loc_c = loc_conn.cursor()
 
+        loc_c.execute(f"""SELECT * from loc_data ORDER BY time_ DESC LIMIT 1;""")
+        default_loc = loc_c.fetchall()
+
         img_array = []
-        counter = 0
         for cam_t, img, object in cam_data:
             cam_t_obj = datetime.strptime(cam_t, "%Y-%m-%d %H:%M:%S.%f")
-            end_t_obj = cam_t_obj + timedelta(hours=20)
-            start_t_obj = cam_t_obj - timedelta(hours=20)
+            end_t_obj = cam_t_obj + timedelta(minutes=0.1)
+            start_t_obj = cam_t_obj - timedelta(minutes=0.1)
             end_t = end_t_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
             start_t = start_t_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
             loc_c.execute(f"""SELECT * from loc_data WHERE time_ BETWEEN '{start_t}' AND '{end_t}';""")
-            close_locs = loc_c.fetchall()
-            close_loc = close_locs[counter]
-            img_array.append([img.split("=")[0], object, cam_t, close_loc])
-            counter += 1
+            close_loc = loc_c.fetchall()
+            
+            if len(close_loc) != 0:
+                img_array.append([img.split("=")[0], object, cam_t, close_loc[0]])
+            else:
+                img_array.append([img.split("=")[0], object, cam_t, default_loc[0]])
         
         return json.dumps({"result": img_array})
 
