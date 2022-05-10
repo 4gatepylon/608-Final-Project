@@ -7,6 +7,7 @@ import { Map, Marker, Polyline } from "./components/Map";
 import { useData } from "./components/RobotPlots";
 import { ValuesAndNavBar } from "./components/NavBar";
 import Camera from "./components/Camera";
+import PathHandler from "./components/PathHandler";
 
 console.log(process.env);
 
@@ -24,7 +25,9 @@ const App = () => {
   // state for whether we are on map
   const [showMap, setShowMap] = React.useState(false);
   // state for whether we are on camera
-  const [showCamera, setShowCamera] = React.useState(true);
+  const [showCamera, setShowCamera] = React.useState(false);
+  // state for whether we are on path handler
+  const [showPathHandler, setShowPathHandler] = React.useState(true);
 
   // This sets up the initial position of the map.
   const [clicks, setClicks] = useState<google.maps.LatLng[]>([]);
@@ -47,9 +50,9 @@ const App = () => {
     setCenter(m.getCenter()!.toJSON());
   };
 
-  const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
+  let apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
   if (!apiKey) {
-    return <h1>Missing API key</h1>;
+    apiKey = "";
   }
 
   const render = (status: Status) => {
@@ -90,14 +93,18 @@ const App = () => {
 
   const cameraHtml = <Camera />;
 
+  const pathSaver = <PathHandler />;
+
   return (
     <div>
       <ValuesAndNavBar
         setShowMap={(x: boolean) => setShowMap(x)}
         setShowCamera={(x: boolean) => setShowCamera(x)}
+        setShowPathHandler={(x: boolean) => setShowPathHandler(x)}
       />
       {showMap && mapHtml}
       {showCamera && cameraHtml}
+      {showPathHandler && pathSaver}
     </div>
   );
 };
