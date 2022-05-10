@@ -125,14 +125,11 @@ The controller is similar to the ball-sim lab but with all unecessary components
 ESP Now enabled.
 
 ## Hardware Layout
-### The robot's Wifi-Scanning Module
-TODO: there should be a system diagram here.
-
-### The robot's Driver Module
-TODO: there should be a system diagram here.
+### The Robot (ESP Now Reciever)
+<img src="recv.png"></img>
 
 ### Controller
-TODO: there should be a system diagram here.
+<img src="send.png"></img>
 
 ## Parts List
 - Hobbyist Motors (from TA)
@@ -235,17 +232,55 @@ The robot would be useful, but understand that to create our MVP it was necessar
 # Detailed Code Layout
 ## Server
 Our server code is seperated into two modules, called `Crud` and `Webpage`, which respectively handle API endpoints
-to
-read/write from/to the databases/state and a simple webpage server. We have a request handler which based on the URL
-arguments passed is able to route the request responder to either Crud or the Webpage's handlers.
+to read/write from/to the databases/state and a simple webpage server. We have a request handler which based on the URL
+arguments passed is able to route the request to either Crud or the Webpage's handlers.
 
 The Crud endpoints modify three databases: one for camera data, one for location data, and one for kinematic data.
-We
-have split it up this way because the modules handling the sending of these different types of data have different
+We have split it up this way because the modules handling the sending of these different types of data have different
 frequencies at which they send their data. The Crud object implements entirely static methods which are typically
-wrapped in a python SQLite connection and cursor decorator to modify the correct database. The following endpoints
-are
-available:
+wrapped in a python SQLite connection and cursor decorator to modify the correct database. Using decorators like this
+along with the static objects was able to make our code a lot cleaner and easier to work with. Below is an example Code
+snippets to give you a sense of what modifiying our databases looks like.
+
+~~~~~~~~~~~
+class Crud(object):
+    LOC_FILE = "/var/jail/home/team10/loc.db" 
+    ...
+    
+    def withConnLocCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str]) -> str:
+        """ Wrap your functions in this when you want them to have access to the database"""
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(Crud.LOC_FILE)
+            c = conn.cursor()
+            result = func(c, conn, *args, **kwargs)
+            conn.commit()
+            conn.close()
+            return result
+        return wrapper
+    ...
+
+    @withConnLocCursor 
+    def handle_whereami(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
+        if not "x" in request["values"] or not "y" in request["values"]:
+            return "Error: please provide x and y"
+        x_str: str = request["values"]["x"]
+        y_str: str = request["values"]["y"]
+        
+        try:
+            x: float = float(x_str)
+            y: float = float(y_str)
+            loc: str = GeoFencer.get_area((x, y))
+            now = datetime.now()
+            # post to database 
+            c.execute("""CREATE TABLE IF NOT EXISTS loc_data (time_ timestamp, x_x real, y_y real, build text);""")
+            c.execute('''INSERT into loc_data VALUES (?,?,?,?);''', (now, x,y,loc))
+            return loc 
+        except Exception as e:
+            return f"Error: please provide x and y as floats, had error: {e}"
+    ...
+~~~~~~~~
+
+The following endpoints are available for Crud:
 
 <table class="table">
     <tbody>
@@ -289,16 +324,13 @@ available:
 </table>
 
 The webpage only has one single meaningful endpoint to return the string representing the `index.html` of our
-webpage.
-We also have a dummy "mona lisa" endpoint accessible with `?monalisa=1` as a sample of HTML base64 embedding of
-images.
-Note that we had to put the wherehaveibeen endpoint in Crud and not Webpage because it requires reading from the
+webpage. We also have a dummy "mona lisa" endpoint accessible with `?monalisa=1` as a sample of HTML base64 embedding of
+images. Note that we had to put the wherehaveibeen endpoint in Crud and not Webpage because it requires reading from the
 database directly. We implemented it as a low-level, simple MVP for localization early on, before we had map
 waypoints.
 
 Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to
-locate
-the robot on MIT.
+locate the robot on MIT.
 
 ## Database Layout
 ### Location Database with Example
@@ -360,15 +392,46 @@ the robot on MIT.
 </table>
 
 ## Web Client
-The web client has a browser router to allow users to select between the map of locations or a camera feed. These
-can be
-switched using a navigation bar at the top of the page. It was challenging integrating the navigation bar, not only
-because React's built-in BrowserRouter did not work for some reason, but also because CSS was difficult when
-integrating
-the map from Google maps. Both the map and the camera are stateful and use polling to update their data to be up to
-date.
+### React
+We were able to use ReactJS with Typescript to create an aesthetic and reactive experience for the users of our webpage.
+Our main components are a map, a plotter of tilt and kinematic data, and a camera handler that shows a historical,
+real-time view of the camera feed from the robot. The map communicates with a Google API for maps to enable us to place
+pins and create paths, which helps visualize what the robot does.
 
-## ESP32 Controller
+The other major advantage of React is that enables us to do single-page routing. This is ideal for us because deployment
+on the python server (which is not meant to serve multipage applications) was non-trivial, and thus having a stateful
+single-page application handles theseengineering challenges on the client side more easily.
+
+### Layout Handling
+We used Tailwind CSS to generate utility classes which handle all of the styling on the webpages. Tailwind CSS is unique
+in that it helped with tricky layout handling for the canvas, especially the Google API map.
+
+### Deployment
+The main insight for deploying reactive applications using a build tool like webpack from the 6.08 server is that you
+need to staticaly bundle everything somewhere where it can be reached, an then you need to change the paths in your
+javascript file to include the full path on the 6.08 server. We were able to do this by changing environment variables
+in a secrets file. Changing the secrets file is also important because if students are using an API key like we were for
+the Google Map, then it is important that they avoid writing it in their javascript file due to security concerns. This
+is not obvious to someone new to web development, but it is important to understand.
+
+### Challenges
+We wish we'd had Git or in general version control already built-in to the server so that we could collaborate more
+easily there. This is meaningful because we needed to test both our front-end and back-end in real time to debug and we
+ran into issues due to people pushing things to production randomly for the purposes of testing.
+
+Another major challenge was synchronizing the location stream and the images from the database without taking too long
+and blocking on the client. We were able to surmount this by lowering the frequency of updates on the client, which
+fortunately was not perceptibly slower (due to the camera being, in itself, slow).
+
+Lastly, we had to work around bugs involving react's native BrowserRouter, because we couldn't use paths ont the client.
+Instead, we used a state machine (similar to those we've seen throughout the class) to select which page to show. Each
+page has a state (roughly) and each state transitions to each other using a button in the header of our web client. We
+conditionally render based on the state.
+
+## ESP32 Controller (Sender)
+Sender.ino: /arduino/sender/sender.ino
+
+Sender.ino: /arduino/sender/sender.ino
 The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
@@ -397,7 +460,16 @@ Napster
 lab for the notes, except the function is in fact purely linear.
 
 ## ESP32 Robot (Driver and Sensor)
-The robot's code for the driver and sensor. TODO.
+Receiver_w_cam.ino
+
+This file includes both camera detection and posting as well as receiver code for esp now communication and converting speed, direction to robot instructions with move_car. For camera detection we set resolution to 160x120 to not overflow space and base64 encoded each frame before posting to the camera database. Additional parsing was done on the server. 
+The file also included esp now code through OnDataRecv to receive the x,y tilt info but also associated stats through the info variables which contains direction and speed- later passed into moveCar.    
+                
+Support functions: /arduino/receiver_w_cam/camera_support.h. Support functions for camera so includes base_64 encoding helper functions from lab. 
+
+
+## Dual Core + TinyML
+We explored a few different methods of object detection since we wanted to first create something that was more customizable rather than using an API so tinyml has a proof of concept for ml sin working on the arduino.  
 
 ## ESP32 Robot (Wifi-Scanner/Locator)
 The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
