@@ -1,6 +1,6 @@
 from email.mime import image
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import json
 import base64
@@ -424,21 +424,8 @@ class Crud(object):
         # NOTE image decoded is already decoded
         image_decoded = data[1]
         object_detected = data[2] 
-        # remove the last //9k=UBcbimsKAExTSKQj/9k=2Q==
         image_decoded = image_decoded.split("=")[0] 
-        #return image_decoded
-        # if request['values']['camera']=='1':
-        #     return f"""
-        #     <!DOCTYPE html>
-        #     <html>
-        #     <head>
-        #     </head>
-        #     <body> 
-        #         <img src="{image_decoded}">
-        #         <strong>{object_detected}</strong>
-        #     </body>
-        #     </html>
-        #     """
+       
         if request['values']['camera']=='1':
              return json.dumps({"image_decoded": image_decoded, "object": object_detected})
         else: # if camera is the other one send 
@@ -447,11 +434,32 @@ class Crud(object):
         
         # send through object detection and result 
 
-    @withConnCamCursor
-    def handle_camera_get_all(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
-        c.execute("""SELECT * FROM cam_data INNER JOIN loc_data USING(time) ORDER BY time_ DESC;""") 
-        all_data = c.fetchall() 
-        return all_data 
+    def handle_camera_get_all():
+
+        cam_conn = sqlite3.connect(Crud.CAM_FILE)
+        cam_c = cam_conn.cursor()
+        cam_c.execute("""SELECT * FROM cam_data ORDER BY time_ DESC LIMIT 10;""") 
+        cam_data = cam_c.fetchall() 
+
+        loc_conn = sqlite3.connect(Crud.LOC_FILE)
+        loc_c = loc_conn.cursor()
+
+        img_array = []
+        counter = 0
+        for cam_t, img, object in cam_data:
+            cam_t_obj = datetime.strptime(cam_t, "%Y-%m-%d %H:%M:%S.%f")
+            end_t_obj = cam_t_obj + timedelta(hours=20)
+            start_t_obj = cam_t_obj - timedelta(hours=20)
+            end_t = end_t_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
+            start_t = start_t_obj.strftime("%Y-%m-%d %H:%M:%S.%f")
+            loc_c.execute(f"""SELECT * from loc_data WHERE time_ BETWEEN '{start_t}' AND '{end_t}';""")
+            close_locs = loc_c.fetchall()
+            close_loc = close_locs[counter]
+            img_array.append([img.split("=")[0], object, cam_t, close_loc])
+            counter += 1
+        
+        return json.dumps({"result": img_array})
+
         #c.execute("""SELECT * FROM loc_data ORDER BY time_ DESC;""") 
         #loc_data = c.fetchall()
         
@@ -513,10 +521,10 @@ def request_handler(request: Any):
         has_value = "values" in request and len(request["values"]) > 0
         camera = "camera" in request["values"]
         camera1 = "allcamera" in request["values"]
+        if camera1:
+            return Crud.handle_camera_get_all()
         if camera:
             return Crud.handle_camera_get(request)
-        if camera1:
-            return Crud.handle_camera_get_all(request)
         
         if has_value:
             if "wherehaveibeen" in request["values"]:
@@ -526,8 +534,4 @@ def request_handler(request: Any):
             # values=1 for db api request
             return Crud.handle_db_api_get(request)
         else:
-<<<<<<< HEAD
             return Webpage.handle_webpage_get(request)
-=======
-            return Webpage.handle_webpage_get(request)
->>>>>>> c1a9be51a245eacce6fc873b9c12ce8a2657b35c
