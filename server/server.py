@@ -43,11 +43,13 @@ HTML_HEADER: str = """
 	</style>
 </head>
 <body>
-	<h2>Highscores</h2>
+	<h2>Locations</h2>
 	<table>
 		<tr>
 			<th>Location</th>
             <th>Time</th>
+            <th>Lat</th>
+            <th>Lon</th>
 		</tr>
 """
 
@@ -58,7 +60,7 @@ HTML_FOOTER: str = "</table></body></html>"
 
 def LOCATIONS_HTML(timestamped_locations):
     # Have to reverse because we add from top to bottom and want newest first
-    entries = "".join(reversed([f"<tr><td>{name}</td><td>{time}</td></tr>" for time, name in timestamped_locations]))
+    entries = "".join(reversed([f"<tr><td>{name}</td><td>{time}</td><td>{lat}</td><td>{lon}</td></tr>" for time, name, lat, lon in timestamped_locations]))
     return HTML_HEADER + entries + HTML_FOOTER
 
 '''
@@ -248,6 +250,9 @@ class Crud(object):
     DB_FILE = "/var/jail/home/team10/robot.db" 
     CAM_FILE = "/var/jail/home/team10/camera.db" 
     LOC_FILE = "/var/jail/home/team10/loc.db" 
+    PATHS_FILE = "/var/jail/home/team10/paths.db"
+
+    PATHS_TABLE = "paths"
 
     def __init__(self):
         pass
@@ -290,6 +295,17 @@ class Crud(object):
             conn.close()
             return result
         return wrapper
+    
+    def withConnPathCursor(func: Callable[[sqlite3.Cursor, sqlite3.Connection, Any], str]) -> str:
+        """ Wrap your functions in this when you want them to have access to the database"""
+        def wrapper(*args, **kwargs):
+            conn = sqlite3.connect(Crud.PATHS_FILE)
+            c = conn.cursor()
+            result = func(c, conn, *args, **kwargs)
+            conn.commit()
+            conn.close()
+            return result
+        return wrapper
 
     @withConnCursor
     def handle_db_api_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request: Any) -> str:
@@ -307,7 +323,10 @@ class Crud(object):
         #buildings = []
 
         for time_, a_x, a_y, v_x, v_y, speed, direction, in data:
-            dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
+            try:
+                dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
+            except:
+                dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S")
             times.append(dto.strftime("%m/%d/%Y, %H:%M:%S"))
             # acceleration is tilt
             a_x_vals.append(a_x)
@@ -471,6 +490,72 @@ class Crud(object):
         #image_decoded = image_decoded.split("=")[0] 
         # send through object detection and result 
         # get location 
+    
+    # Uses a slightly different syntax so it's easier to type
+    @withConnPathCursor
+    def handle_path_create(c: sqlite3.Cursor, conn: sqlite3.Connection, request):
+        assert(request["method"] == 'POST')
+        assert("values" in request)
+        values = request["values"]
+        assert("pathcreate" in values)
+        if not "name" in values:
+            return "No name provided"
+        name = values['name']
+        # You are able to specify to the granularity of days (this is also meant to work on urls)
+        if not "start" in values:
+            return "No start date provided, format is YYYYMMDD"
+        if not "end" in values:
+            return "No end date provided, format is YYYYMMDD"
+        start = datetime.strptime(values['start'], "%Y%m%d")
+        end = datetime.strptime(values['end'], "%Y%m%d")
+        if (end < start):
+            return "End date is before start date"
+
+        c.execute(f"""CREATE TABLE IF NOT EXISTS {Crud.PATHS_TABLE} (name text, start timestamp, end timestamp);""")
+        data = c.execute(f"""SELECT * FROM {Crud.PATHS_TABLE};""").fetchall()
+        if len(data) > 0:
+            return f"Bad name {name} was already in use"
+        c.execute(f'''INSERT into {Crud.PATHS_TABLE} VALUES (?,?,?);''', (name, start, end))
+        return "OK"
+    
+    @withConnCursor
+    def get_all_path_between(c: sqlite3.Cursor, conn: sqlite3.Connection, start, end):
+        assert(type(start) == datetime)
+        assert(type(end) == datetime)
+
+        # NOTE this is copied from `handle_data_api_get`
+        data = c.execute("""SELECT * FROM loc_data WHERE (? < time_ AND time_ < ?) ORDER BY time_ ASC LIMIT 20;""", (start, end)).fetchall() 
+        #tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, x_x, x_y) in data]
+        # In theory the building is necessary, but it is what it is
+        #tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_] # time and location every time 
+        alldata = []
+        for time, lat, lon, building in data:
+            time = time if type(time) == str else \
+                time.strftime("%Y-%m-%d %H:%M:%S.%f") if type(time) == datetime else \
+                    str(time)
+            alldata.append((time, building, str(lat), str(lon)))
+        return LOCATIONS_HTML(alldata)
+    
+    @withConnPathCursor
+    def handle_path_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request):
+        assert(request["method"] == 'GET')
+        assert("values" in request)
+        values = request["values"]
+        assert("pathget" in values)
+        name = values['name']
+
+        c.execute(f"""CREATE TABLE IF NOT EXISTS {Crud.PATHS_TABLE} (name text, start timestamp, end timestamp);""")
+        data = c.execute(f"""SELECT * FROM {Crud.PATHS_TABLE} WHERE name = ?;""", (name,)).fetchone()
+        assert(len(data) == 3)
+        realname, start, end = data
+        assert(name == realname)
+        start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S") if type(start) == str else None
+        end = datetime.strptime(end, "%Y-%m-%d %H:%M:%S") if type(end) == str else None
+        if start is None or end is None:
+            return "Error: had no start or end for an existing entry in the database (or was not datetime parsable string)"
+        
+        # Returns an HTML page
+        return Crud.get_all_path_between(start, end)
 
         
 
@@ -510,6 +595,9 @@ class Webpage(object):
 def request_handler(request: Any):
     if request['method'] == 'POST':
         has_value = "values" in request and len(request["values"]) > 0
+        pathcreate ="values" in request and  "pathcreate" in request["values"]
+        if pathcreate:
+            return Crud.handle_path_create(request)
         if has_value: 
             if "camera" in request["values"]:
                 return Crud.handle_camera_post(request)
@@ -523,6 +611,9 @@ def request_handler(request: Any):
         camera1 = "allcamera" in request["values"]
         if camera1:
             return Crud.handle_camera_get_all()
+        pathget = "values" in request and "pathget" in request["values"]
+        if pathget:
+            return Crud.handle_path_get(request)
         if camera:
             return Crud.handle_camera_get(request)
         
