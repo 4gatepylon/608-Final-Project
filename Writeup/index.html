@@ -1,3 +1,32 @@
+<!-- <head>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        h2 {
+            font-family: arial, sans-serif;
+        }
+
+        body {
+            padding: 40px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head> -->
+
 <div style="font-size: 30; font-weight: bold; text-align: center;">Infinite Rover</div>
 TODO. We will have a video here soon.
 
@@ -23,10 +52,14 @@ areas where our robot is effective, such as using the Wifi-Scan Google API from 
 - Web Application
 
 ## Functionality
-Functionality for our system is fairly intuitive and simple. Users press the start button (button 1) on the controller
-to begin moving the Rover. They then tilt forwards to move Rover forwards, backwards to move backwards, and to either
-side to move only one wheel (spinning Rover). "Forwards" for Rover always means with respect to its own direction and
-not that of the person controlling it (who may or may not be in another room, using the camera feed to guide movement).
+Functionality for our system is fairly intuitive and simple. Users press the start button (button 1) on the
+controller
+to begin moving the Rover. They then tilt forwards to move Rover forwards, backwards to move backwards, and to
+either
+side to move only one wheel (spinning Rover). "Forwards" for Rover always means with respect to its own direction
+and
+not that of the person controlling it (who may or may not be in another room, using the camera feed to guide
+movement).
 The user can disable movement by clicking button 1 again. They can open up our website to run the web client to see
 the camera feed from the robot (at a rather slow framerate). On that same website, they can use the top menu bar to
 select whether to switch to a historical map of the robot's trajectory.
@@ -41,7 +74,8 @@ location data using a Google API.
 We use a linearly interpolated and binned tilt-based controller. We began by modifying the ball simulation lab
 code to not use a simulation, but instead simply send its tilt information to another Arduino using a the ESP Now
 module. We were able to use a simple Arduino ``script'' sketch to display the unchanging MAC address of the
-Rover's ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this number
+Rover's ESP32S2 Arduino, which enabled us to use the ESP Now to send tilt information every 80 ms. We chose this
+number
 because from experiment we found it to be responsive enough for a user to intuitively control Rover, and slow enough
 to avoid clogging up bandwidth (which we also need for other features, like locating Rover).
 
@@ -54,7 +88,8 @@ Fortunately, our photos are small enough to fit.
 We have a database that stores Rover's locations on the MIT campus, as well as in latitude and longitude, the former
 being similar to the lab. We have a few endpoints for this information. One returns a table of the locations Rover
 visited over time in sequence, just like in the lab. Another, returns a Google Maps map with waypoints where Rover
-visited connected by polylines to provide a more intuitive and aesthetic interface. These are reachable from our home
+visited connected by polylines to provide a more intuitive and aesthetic interface. These are reachable from our
+home
 page, which is served by the 608 server.
 
 ### Auto Mode: object detection with camera feed
@@ -72,12 +107,14 @@ needed parallel Wifi-scanning due to it being slow and blocking ESP Now communic
 parallelism but it was insufficient. More details on this will be available further below.
 
 ### Rover's Wifi-Scanning Module
-The wifi scanning module is basically the same as that from the localization lab. We simply removed all other unecessary
+The wifi scanning module is basically the same as that from the localization lab. We simply removed all other
+unecessary
 components. It has an Wifi-enabled ESP32 connected to power and ground contacting our API endpoints on a consistent
 basis.
 
 ### Rover's Driver Module
-Rover's driver module is altogether different from anything in any lab. It is connected to a pair of motors which are
+Rover's driver module is altogether different from anything in any lab. It is connected to a pair of motors which
+are
 connected to wheels, all on a chasis which also holds two battery packs: one for the the motors and one for the
 Arduino. We have a motor driver to control the motors and an Arducam to take photos.
 
@@ -127,45 +164,62 @@ Many of them we were forced to simply work around. They mainly included, but
 were not limited those below.
 
 ### Implementation Challenges
-**GPS not working.** We had troubles setting up our GPS. We followed the guide posted on the 6.08 class site, but its
-pins were outdated. After discussing with a TA, we were able to find the right pins, but even then it would not display
+**GPS not working.** We had troubles setting up our GPS. We followed the guide posted on the 6.08 class site, but
+its
+pins were outdated. After discussing with a TA, we were able to find the right pins, but even then it would not
+display
 anything. We tried all permutations of wiring for our GPS module, but were unable to fetch location information even
 with it flashing as if it were functional. For that reason we abandoned GPS in favor of wifi-scanning.
 
-**Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.** Wifi-scanning from the lab was
-too slow for our needs, since it blocked Rover from acting on controller requests to change speed. For this reason we
-first tried using the dual-core functionality of the ESP32S2 Arduino, but it introduced parallelism bugs sporadically
+**Wifi-scanning and requests latency; dual-core parallelism bugs with the Wifi Module.** Wifi-scanning from the lab
+was
+too slow for our needs, since it blocked Rover from acting on controller requests to change speed. For this reason
+we
+first tried using the dual-core functionality of the ESP32S2 Arduino, but it introduced parallelism bugs
+sporadically
 and unpredictably when the Wifi module did a scan to update its information regarding nearby access points (to query
 Google's API with). This forced us to simply use a third Arduino for our location data collection.
 
-**Initial lack of support for react-based web clients on the server.** We really wanted to have a reactive web-client
-for our application so that we could enable real-time data and control of Rover. However, we had so little control over
+**Initial lack of support for react-based web clients on the server.** We really wanted to have a reactive
+web-client
+for our application so that we could enable real-time data and control of Rover. However, we had so little control
+over
 the 608 server that at first it was impossible to easily package and serve web clients built with tools like React,
 becuase it didn't support things such as serving images, which were necessary for our app to function. We tried to
 package the app in a single file but it was more of a hassle than necessary, and after wrangling with the PUBLIC_URL
 path in React's build toolchain we were able to serve React from the 608 server.
 
-**Storage space for camera data both on on-board buffers and in the server.** Most image sizes were too big, especially
+**Storage space for camera data both on on-board buffers and in the server.** Most image sizes were too big,
+especially
 in base64, to store on the Arduino and send to the server in one request. We also worried at first that these images
 would not fit into our database. Fortunately, this was not the case and we were able to do both of these things by
 picking the smallest possible image size, 160x120.
 
-**Lack of power for a sensor-laden Rover.** We were unable to do an end to end test until week 3 of the project because
-Rover had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack through
-the motor driver. Luckily, our order of 5V USB power supplies arrived in time for us to power the Arduino independently
+**Lack of power for a sensor-laden Rover.** We were unable to do an end to end test until week 3 of the project
+because
+Rover had too many sensors to power them all in addition to the motors, even when given 6V from the battery pack
+through
+the motor driver. Luckily, our order of 5V USB power supplies arrived in time for us to power the Arduino
+independently
 with a power supply and thereby make our robot autonomous (disconneting it from the computer) and able to power its
 sensors.
 
 **JPEG HTML embedding platform differences.** We really struggled to display images because even while decoding them
-into JPGs worked fine on our local computers (using the bash `base64` command), it did not on the server, where we were
-trying to serve an HTML page with base64-embedded JPEGs. After hours of debugging, with TA help, we ended up clipping
+into JPGs worked fine on our local computers (using the bash `base64` command), it did not on the server, where we
+were
+trying to serve an HTML page with base64-embedded JPEGs. After hours of debugging, with TA help, we ended up
+clipping
 arbitrary prefixes and suffixes from the base64 string and found a combination that worked by pure chance.
 
-**Low Camera Framerate.** Because it took the Arduino a lot of work to take the pictures, encode them in base64, send
-them to the server, await an OK as the server input them into the database, and so forth, the frame rate for our camera
-is very low. It is enough for real-time control in static settings, but not viable for dynamic settings (i.e. with many
+**Low Camera Framerate.** Because it took the Arduino a lot of work to take the pictures, encode them in base64,
+send
+them to the server, await an OK as the server input them into the database, and so forth, the frame rate for our
+camera
+is very low. It is enough for real-time control in static settings, but not viable for dynamic settings (i.e. with
+many
 moving objects). The TAs told us that this was as good as we were gonna get from the Arducam with the ESP32, but we
-imagine that with better hardware and some performance optimization (and streaming) it would be possible to have a more
+imagine that with better hardware and some performance optimization (and streaming) it would be possible to have a
+more
 real-time feed.
 
 ### Design Decisions
@@ -179,14 +233,17 @@ Rover would be useful, but understand that to create our MVP it was necessary to
 
 # Detailed Code Layout
 ## Server
-Our server code is seperated into two modules, called `Crud` and `Webpage`, which respectively handle API endpoints to
+Our server code is seperated into two modules, called `Crud` and `Webpage`, which respectively handle API endpoints
+to
 read/write from/to the databases/state and a simple webpage server. We have a request handler which based on the URL
 arguments passed is able to route the request responder to either Crud or the Webpage's handlers.
 
-The Crud endpoints modify three databases: one for camera data, one for location data, and one for kinematic data. We
+The Crud endpoints modify three databases: one for camera data, one for location data, and one for kinematic data.
+We
 have split it up this way because the modules handling the sending of these different types of data have different
 frequencies at which they send their data. The Crud object implements entirely static methods which are typically
-wrapped in a python SQLite connection and cursor decorator to modify the correct database. The following endpoints are
+wrapped in a python SQLite connection and cursor decorator to modify the correct database. The following endpoints
+are
 available:
 
 <table class="table">
@@ -198,7 +255,8 @@ available:
         </tr>
         <tr>
             <th style="text-align:left"> Kinematic and Location API GET </th>
-            <th style="text-align:left"> Any Value other than "camera," "monalisa," "whereami," or "Wherehaveibeen"</th>
+            <th style="text-align:left"> Any Value other than "camera," "monalisa," "whereami," or "Wherehaveibeen"
+            </th>
             <th style="text-align:left"> Get a list of historial location and kinematic data of Rover. </th>
         </tr>
         <tr>
@@ -229,12 +287,16 @@ available:
     </tbody>
 </table>
 
-The webpage only has one single meaningful endpoint to return the string representing the `index.html` of our webpage.
-We also have a dummy "mona lisa" endpoint accessible with `?monalisa=1` as a sample of HTML base64 embedding of images.
+The webpage only has one single meaningful endpoint to return the string representing the `index.html` of our
+webpage.
+We also have a dummy "mona lisa" endpoint accessible with `?monalisa=1` as a sample of HTML base64 embedding of
+images.
 Note that we had to put the wherehaveibeen endpoint in Crud and not Webpage because it requires reading from the
-database directly. We implemented it as a low-level, simple MVP for localization early on, before we had map waypoints.
+database directly. We implemented it as a low-level, simple MVP for localization early on, before we had map
+waypoints.
 
-Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to locate
+Lastly, we have a GeoFencer object which encapsulates the functionality from the GeoFencing lab and allows us to
+locate
 the robot on MIT.
 
 ## Database Layout
@@ -297,38 +359,50 @@ the robot on MIT.
 </table>
 
 ## Web Client
-The web client has a browser router to allow users to select between the map of locations or a camera feed. These can be
+The web client has a browser router to allow users to select between the map of locations or a camera feed. These
+can be
 switched using a navigation bar at the top of the page. It was challenging integrating the navigation bar, not only
-because React's built-in BrowserRouter did not work for some reason, but also because CSS was difficult when integrating
+because React's built-in BrowserRouter did not work for some reason, but also because CSS was difficult when
+integrating
 the map from Google maps. Both the map and the camera are stateful and use polling to update their data to be up to
 date.
 
 ## ESP32 Controller
-The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was doing
-all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift that
+The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
+doing
+all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
+that
 to be on-board in Rover, we were able to just handle ESP Now messaging. Every 80ms, our code simply gets the tilt
-(corresponding to speed), processes it, then sends it to Rover (with some additional data like direction, angle, and so
-forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP = 1, DOWN = 2,
+(corresponding to speed), processes it, then sends it to Rover (with some additional data like direction, angle, and
+so
+forth, though we only support the four main directions, forward, backwards, left and right, denoted by UP = 1, DOWN
+= 2,
 LEFT = 3, RIGHT = 4, for the purpose of keeping a de-noised experience; we also have NONE signifying not moving).
 
-The `OnDataSent` function is a callback which ESP Now calls when it successfully sends a message. It is used to inform
-the user through the Serial console (if present) that data was successfully sent (which is important for debugging), but
+The `OnDataSent` function is a callback which ESP Now calls when it successfully sends a message. It is used to
+inform
+the user through the Serial console (if present) that data was successfully sent (which is important for debugging),
+but
 is otherwise not that important. The functions `get_direction`, `get_speed`, and `get_angle` turn tilt data into a
-direction and a speed for that direction. As previously mentioned there are four directions for the four rays coming out
+direction and a speed for that direction. As previously mentioned there are four directions for the four rays coming
+out
 of the origin of the four axis on the 2D plane corresponding to the birds-eye view of the ground. We also have a
 functionality to print these kinematics data to the TFT so the user can know how they are conrolling the robot (for
 example if it's far away).
 
 We bin our speeds into 4 bins based on a linear mapping from the range of tilts (between 0 and 1G) and the range of
-speeds (between 0 and 100 in a unit pre-determined by our motor driver). This is similar to the work done in the Napster
+speeds (between 0 and 100 in a unit pre-determined by our motor driver). This is similar to the work done in the
+Napster
 lab for the notes, except the function is in fact purely linear.
 
 ## ESP32 Robot (Driver and Sensor)
 Rover's code for the driver and sensor. TODO.
 
 ## ESP32 Robot (Wifi-Scanner/Locator)
-The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON, and
-then send it to the Google API at `https://www.googleapis.com/geolocation/v1/geolocate` with the key provided to us in
+The Wifi-scanner code is similar to the lab. It simply runs on a loop to scan wifi networks, build the query JSON,
+and
+then send it to the Google API at `https://www.googleapis.com/geolocation/v1/geolocate` with the key provided to us
+in
 one of the labs. Once it is done with this, it sends a request to our backend to update our locations database.
 
 # Milestone Videos
@@ -403,7 +477,7 @@ This got like 400 views on Youtube.
 
 ## Week 4 - TODO
 ### Robot Localization (from Robot) using GPS or Alternative Method
-TODO. This will come soon.
+You can find our short here: <a href="https://www.youtube.com/shorts/DohrP9NixmE"></a>
 
 ### Dynamic Camera Feed
 TODO. This will come soon.
@@ -418,9 +492,12 @@ TODO. This will come soon.
 TODO. This will come soon.
 
 # Historical Notes
-We initially thought of making a mostly web-based project involving a swiming mechanic to catch turtles on a web client
-by moving the arduino (sort of like nintendo kinect). The design of that idea is fleshed out in the project proposal we
-submitted 4 weeks ago. However, Joe and the TAs dissuaded us from pursuing such an idea because doing localization of
+We initially thought of making a mostly web-based project involving a swiming mechanic to catch turtles on a web
+client
+by moving the arduino (sort of like nintendo kinect). The design of that idea is fleshed out in the project proposal
+we
+submitted 4 weeks ago. However, Joe and the TAs dissuaded us from pursuing such an idea because doing localization
+of
 the Arduino in 3D space using an IMU is an unsolved problem and beyond our scope. This is why we opted to instead to
 tilt control for a robot.
 
