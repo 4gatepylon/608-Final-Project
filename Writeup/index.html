@@ -186,10 +186,10 @@ independently
 with a power supply and thereby make our robot autonomous (disconnecting it from the computer) and able to power its
 sensors.</p>
 
-<p><strong>Arudcam debugging</strong>
+<p><strong>Arducam debugging.</strong>
 We first tested the camera with the example script. Then we base64 encoded the image and sent a post request to the server. 
-There were quite a few issues we faced including running out of buffer size so we tried PSram but our Arduino didn’t have the Wrover ESP32 chip so we ended up 
-reducing the resolution to 160x120 which is sufficient for future object detection. 
+There were quite a few issues we faced including running out of buffer size so we tried PSram but our Arduino didn't have the Wrover ESP32 chip so we ended up 
+reducing the resolution to 160x120 which is sufficient for object detection (which we wantd to support, and did). 
 Then on the server side, we created a new database that stores 1 entry of the timestamp and base 64 encoding of the image. 
 We also decoded the base 64 encoding and saved the image as a jpg which initially would get overwritten to avoid database space constraints, 
 but eventually we were able to save multiple images.
@@ -221,11 +221,11 @@ real-time feed.</p>
 
 <p><strong>Object detection model and API use.</strong>
 
-We went about a few methods for object detection. One was creating our own model, which worked, but since we couldn’t download tensorflow on the 
+We went about a few methods for object detection. One was creating our own model, which worked, but since we couldn't download tensorflow on the 
 server we restarted and instead used a google vision API from the server. We went through a number of authentication issues with private keys etc. but ultimately were 
 able to compute the object closest to the camera and its coordinates and save this object in the database. 
 It is also sent to the TFT of the sender so the sender can now decide whether they want to look at the camera or just 
-their TFT screen when controlling the robot. As a simple add-on this would enable us to stop the car if a person is detected in sight (to create an “auto-mode”). </p>
+their TFT screen when controlling the robot. Optionally, we could add a feature to stop the robot if a person is detected in sight (to create an “auto-safety-mode”). </p>
 
 <p><strong>Speed data collection.</strong>
 Since to get real time data, we ran the speed collection loop in parallel (on one of the two cores) to all server requests, we ran into some parallelism issues that caused the Arduino to 
@@ -272,15 +272,14 @@ front-end JavaScript file with JSON parsing, allowing it to render continuously 
 </p>
 
 <p><strong>Showing path history.</strong>
-We store a path using the start and end timestamps for that path, and had to decide how to display this data. We created a simple frontend in react that is a static table which you 
+We store a path using the start and end timestamps for that path, and had to decide how to display this data. We created a simple frontend that takes the form of a static table which you 
 interact with using url parameters, for flexibility and easy access. We decided to limit the table to 20 entries for readability, and it only shows times after the start time and before the end time.
 </p>
 
 <p><strong>Binned speeds.</strong>
 Inspired by the napster lab, we binned the speeds of the robot. We added minimum tilts in each axis necessary to enable movement and then broke up the speeds into quartiles. This would allow our robot to move at different speeds. 
 We used a linear interpolation/mapping from the space of tilts to the space of speeds (with clipping for a max tilt of around 1G at 180 degrees and min tilt of that but negative).
-In the process of doing this, to get real time data, we also ran the loop in parallel (on one of the two cores) to all server requests because otherwise they would block and ruin the user experience. 
-We were able to combine the binned-speed controller plus the robot by using the battery pack for the controller. 
+We found that binning speeds led to a much smoother experience with the robot and probably was better for the motors and motor driver.
 </p>
 
 <h1 id="detailed-code-layout">Detailed Code Layout</h1>
@@ -367,12 +366,12 @@ snippets to give you a sense of what modifiying our databases looks like.</p>
         <tr>
             <th style="text-align:left"> Camera GET </th>
             <th style="text-align:left"> ?camera=1 </th>
-            <th style="text-align:left"> Get an HTML page with a picture from the latest camera feed. </th>
+            <th style="text-align:left"> Get the latest database entry for a picture from the latest camera feed. </th>
         </tr>
         <tr>
             <th style="text-align:left"> Camera All GET </th>
             <th style="text-align:left"> ?allcamera=1 </th>
-            <th style="text-align:left"> Get an serialized sequence of images in base64. </th>
+            <th style="text-align:left"> Get an array of arrays, each containing a camera feed entry and its corresponding location database entry. </th>
         </tr>
     </tbody>
 </table>
@@ -476,7 +475,7 @@ conditionally render based on the state.</p>
 <h2 id="esp32-controller-sender-">ESP32 Controller (Sender)</h2>
 <b>Sender.ino: /arduino/sender/sender.ino</b>
 <p>
-he ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
+The ESP32S2 controller is fortunately one of the simpler Arduino implementations in our project. Initially it was
 doing
 all the localization work because our Robot did not have enough power to use Wifi, but once we were able to shift
 that
