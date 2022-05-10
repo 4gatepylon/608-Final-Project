@@ -323,7 +323,10 @@ class Crud(object):
         #buildings = []
 
         for time_, a_x, a_y, v_x, v_y, speed, direction, in data:
-            dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
+            try:
+                dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S.%f")
+            except:
+                dto = datetime.strptime(time_,"%Y-%m-%d %H:%M:%S")
             times.append(dto.strftime("%m/%d/%Y, %H:%M:%S"))
             # acceleration is tilt
             a_x_vals.append(a_x)
@@ -483,43 +486,51 @@ class Crud(object):
     # Uses a slightly different syntax so it's easier to type
     @withConnPathCursor
     def handle_path_create(c: sqlite3.Cursor, conn: sqlite3.Connection, request):
-        assert(request.method == 'POST')
+        assert(request["method"] == 'POST')
         assert("values" in request)
         values = request["values"]
         assert("pathcreate" in values)
+        if not "name" in values:
+            return "No name provided"
         name = values['name']
         # You are able to specify to the granularity of days (this is also meant to work on urls)
+        if not "start" in values:
+            return "No start date provided, format is YYYYMMDD"
+        if not "end" in values:
+            return "No end date provided, format is YYYYMMDD"
         start = datetime.strptime(values['start'], "%Y%m%d")
         end = datetime.strptime(values['end'], "%Y%m%d")
+        if (end < start):
+            return "End date is before start date"
 
         c.execute(f"""CREATE TABLE IF NOT EXISTS {Crud.PATHS_TABLE} (name text, start timestamp, end timestamp);""")
-        data = c.execute(f"""SELECT * FROM {Crud.PATHS_TABLE};""") 
-        if data.size > 0:
+        data = c.execute(f"""SELECT * FROM {Crud.PATHS_TABLE};""").fetchall()
+        if len(data) > 0:
             return f"Bad name {name} was already in use"
-        c.execute('''INSERT into cam_data VALUES (?,?,?);''', (name, start, end))
+        c.execute(f'''INSERT into {Crud.PATHS_TABLE} VALUES (?,?,?);''', (name, start, end))
         return "OK"
     
     @withConnCursor
     def get_all_path_between(c: sqlite3.Cursor, conn: sqlite3.Connection, start, end):
-        assert(type(start) == datetime.datetime)
-        assert(type(end) == datetime.datetime)
+        assert(type(start) == datetime)
+        assert(type(end) == datetime)
 
         # NOTE this is copied from `handle_data_api_get`
-        data = c.execute("""SELECT * FROM loc_data WHERE (start < time_ AND time_ < end) LIMIT 20 ORDER BY time_ ASC;""").fetchall() 
+        data = c.execute("""SELECT * FROM loc_data WHERE (? < time_ AND time_ < ?) ORDER BY time_ ASC LIMIT 20;""", (start, end)).fetchall() 
         #tlocs_ = [(time_, (float(x_x), float(x_y))) for (time_, x_x, x_y) in data]
         # In theory the building is necessary, but it is what it is
         #tlocs = [(time_, GeoFencer.get_area(loc)) for (time_, loc) in tlocs_] # time and location every time 
         alldata = []
         for time, lat, lon, building in data:
             time = time if type(time) == str else \
-                time.strftime("%Y-%m-%d %H:%M:%S.%f") if type(time) == datetime.datetime else \
+                time.strftime("%Y-%m-%d %H:%M:%S.%f") if type(time) == datetime else \
                     str(time)
             alldata.append((time, building, str(lat), str(lon)))
         return LOCATIONS_HTML(alldata)
     
     @withConnPathCursor
     def handle_path_get(c: sqlite3.Cursor, conn: sqlite3.Connection, request):
-        assert(request.method == 'GET')
+        assert(request["method"] == 'GET')
         assert("values" in request)
         values = request["values"]
         assert("pathget" in values)
@@ -530,17 +541,13 @@ class Crud(object):
         assert(len(data) == 3)
         realname, start, end = data
         assert(name == realname)
-        start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f") if type(start) == str else None
-        end = datetime.strptime(end, "%Y-%m-%d %H:%M:%S.%f") if type(end) == str else None
+        start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S") if type(start) == str else None
+        end = datetime.strptime(end, "%Y-%m-%d %H:%M:%S") if type(end) == str else None
         if start is None or end is None:
             return "Error: had no start or end for an existing entry in the database (or was not datetime parsable string)"
         
         # Returns an HTML page
         return Crud.get_all_path_between(start, end)
-
-
-
-        
 
         
 
