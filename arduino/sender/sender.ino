@@ -187,9 +187,9 @@ uint32_t timer;
 char request_buffer2[IN_BUFFER_SIZE];   // char array buffer to hold HTTP request
 char response_buffer2[OUT_BUFFER_SIZE]; // char array buffer to hold HTTP response
 
-char request[IN_BUFFER_SIZE];
-char response[OUT_BUFFER_SIZE]; // char array buffer to hold HTTP request
-char json_body[JSON_BODY_SIZE];
+char request_buffer3[500];
+char response_buffer3[50]; // char array buffer to hold HTTP request
+//char json_body[JSON_BODY_SIZE];
 
 
 
@@ -201,9 +201,9 @@ void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status)
   // Copies the sender mac address to a string
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
            mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
-  //Serial.print(macStr);
+  Serial.print(macStr);
   //Serial.print(" send status:\t");
-  //Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
 Direction get_direction(float x, float y)
@@ -407,6 +407,7 @@ void wifi_server_loop(void *parameter)
       // displayAllGPS();
     //}
     int autoFlag = auto_button.update();
+    /*
     body[0] = 0;
     sprintf(
         body, "a_x=%f&a_y=%f&v_x=%d&v_y=%d&angle=%f&dir=%d&speed=%f",
@@ -427,28 +428,44 @@ void wifi_server_loop(void *parameter)
     sprintf(request_buffer2 + strlen(request_buffer2), "Content-Length: %d\r\n", body_len); // append string formatted to end of request buffer
     strcat(request_buffer2, "\r\n");                                                        // new line from header to body
     strcat(request_buffer2, body);                                                          // body
-    strcat(request_buffer2, "\r\n");                                                        // new line
-    Serial.println(request_buffer);
+    strcat(request_buffer2, "\r\n");                                                        // new lin
     do_http_request("608dev-2.net", request_buffer2, response_buffer2, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
     Serial.println(response_buffer2);
+     
 
     delay(DT_SERVER);
-
+    */ 
+    memset(request_buffer3,0,50);
+    sprintf(request_buffer3,"GET http://608dev-2.net/sandbox/sc/team10/server.py?camera=2 HTTP/1.1\r\n");
+    strcat(request_buffer3,"Host: 608dev-2.net\r\n");
+    strcat(request_buffer3,"\r\n"); //new line 
+    // out buffer size is 
+    do_http_request("608dev-2.net", request_buffer3, response_buffer3, 50, RESPONSE_TIMEOUT,true);
+    Serial.println("RESPONSE BUFFER"); //viewable in Serial Terminal
+      
     
-    sprintf(request_buffer,"GET http://608dev-2.net/sandbox/sc/team10/server.py?camera=2 HTTP/1.1\r\n");
-      strcat(request_buffer,"Host: 608dev-2.net\r\n");
-      strcat(request_buffer,"\r\n"); //new line 
-      do_http_request("608dev-2.net", request_buffer, response_buffer, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT,true);
-      Serial.println("RESPONSE BUFFER"); //viewable in Serial Terminal
-      //Serial.println(response_buffer); 
-      tft.setCursor(50,10,4);
-      tft.println(response_buffer);
-      // sender gets from server 
-      delay(DT_SERVER);
+    tft.setCursor(0,80,1);
+    //tft.println("Detected: ");
+    Serial.println(response_buffer3);
+    response_buffer3[12] = '\0';
 
+    tft.println(response_buffer3); 
+
+    // IN THE FUTURE THIS IS WHAT WE WOULD IMPLEMENT FOR DIFFERENT OBJECTS TO MAKE IT MORE AUTONOMOUS 
+    /*
+    if (strcmp(response,"Person")==0){
+        tft.println("STOP"); 
+        MOVING = !MOVING; 
+        // set moving to false   AUTOMAtICALLY         
+    } 
+    */
+    
+      // sender gets from server 
+    delay(DT_SERVER);
     
   }
 }
+
 
 // This is where we run everything that is not the super slow wifi server loop
 void other_things_loop(void *parameters)
@@ -530,7 +547,7 @@ void other_things_loop(void *parameters)
 void setup()
 {
   // Setup TFT and Serial
-  tft.init();
+  tft.init(); 
   tft.setRotation(2);
   tft.setTextSize(1);
   tft.fillScreen(BACKGROUND);
@@ -655,16 +672,17 @@ void setup()
   // Set up tasks
   // Use pinned to core so that it'll be scheduled on the same core
   // and that we we can run in parallel.
+  
   xTaskCreatePinnedToCore(
       wifi_server_loop, /* Function to implement the task */
       "Task0",          /* Name of the task */
-      4000,             /* Stack size in words: wifi needs more for dynamic json doc, etc... */
+      5000,             /* Stack size in words: wifi needs more for dynamic json doc, etc... */
       NULL,             /* Task input parameter */
       0,                /* Priority of the task */
       NULL,             /* Task handle: not used since tasks are independent. */
       0);               /* Core where the task should run */
 
-  xTaskCreatePinnedToCore(
+  xTaskCreatePinnedToCore( 
       other_things_loop, /* Function to implement the task */
       "Task1",           /* Name of the task */
       1000,              /* Stack size in words */
@@ -673,9 +691,82 @@ void setup()
       NULL,              /* Task handle: not used since tasks are independent. */
       1);                /* Core where the task should run */
   Serial.println("Setup completed.");
+  
 }
 
 void loop()
 {
-  
+  /*
+  tft.setCursor(0, 10, 1);
+    imu.readAccelData(imu.accelCount);
+    // Flipped because forward is "up"
+    float y = imu.accelCount[0] * imu.aRes;
+    float x = imu.accelCount[1] * imu.aRes;
+
+    // Clip to avoid wierd edge cases
+    // y is inverted for some reason we found out during tested
+    y = -y;
+    y = y > MAX_TILT_Y ? MAX_TILT_Y : y;
+    y = y < -MAX_TILT_Y ? -MAX_TILT_Y : y;
+    x = x > MAX_TILT_X ? MAX_TILT_X : x;
+    x = x < -MAX_TILT_X ? -MAX_TILT_X : x;
+
+    float angle = get_angle(x, y);
+
+    int moveFlag = move_button.update();
+
+    Direction direction;
+    float speed;
+    if (moveFlag > 0)
+    {
+      MOVING = !MOVING;
+      tft.fillScreen(BACKGROUND);
+      tft.setCursor(0, 10, 1);
+    }
+    if (MOVING)
+    {
+      direction = get_direction(x, y);
+      speed = get_speed(direction, x, y);
+      print_direction(direction);
+      tft.println("Speed below");
+      tft.println(speed);
+      tft.println("Tilt Below x then y");
+      tft.println(x);
+      tft.println(y);
+    }
+    else
+    {
+      direction = NONE;
+      speed = 0;
+      tft.println("Not Moving   ");
+    }
+
+    // Update information so we can send to the server if necessary
+    // And also send to the arduino
+    info.tilt.x = x;
+    info.tilt.y = y;
+    info.angle = angle;
+    info.speed = speed;
+    info.direction = direction;
+
+    if (millis() - esp_now_timer > DT_ESP_NOW)
+    {
+      // send the position
+      esp_err_t result = esp_now_send(0, (uint8_t *)&info, sizeof(WireData));
+
+      // do some error checking
+      if (result == ESP_OK)
+      {
+        // Serial.println("Sent with success");
+      }
+      else
+      {
+        // Serial.println("Error sending the data");
+      }
+      esp_now_timer = millis();
+    }
+    delay(10);
+    */
+
+
 }

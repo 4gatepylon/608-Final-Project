@@ -78,6 +78,12 @@ int enable2Pin = 33;
 int motorSpeedA = 0;
 int motorSpeedB = 0;
 
+const int freq = 30000;
+const int pwmChannel = 0;
+const int pwmChannel2 = 1;
+const int resolution = 8;
+int dutyCycle = 200;
+
 const int CS = 34;
 // uint32_t primary_timer; // main loop timer
 // char request_buffer2[IN_BUFFER_SIZE]; //char array buffer to hold HTTP request
@@ -115,8 +121,6 @@ uint8_t temp = 0, temp_last = 0;
 int i = 0;
 bool is_header = false;
 char body[9000];
-char part_body[2500];
-char part[2000];
 
 // ESP32WebServer server(80);
 WiFiClient client; // global WiFiClient Secure object
@@ -128,18 +132,20 @@ void start_capture()
   // camCapture(myCAM);
 }
 
-const int img_buffer_size = 60000;
+const int img_buffer_size = 8000;
 char fullimg[img_buffer_size];
 
 void moveCar(uint8_t direction, uint8_t speed)
 {
   if (direction == DOWN)
   {
-
+    //Serial.println("DOWNNNN");
     motorSpeedA = speed;
     motorSpeedB = speed;
-    analogWrite(enable1Pin, motorSpeedA);
-    analogWrite(enable2Pin, motorSpeedB);
+    ledcWrite(pwmChannel, motorSpeedA);   
+    ledcWrite(pwmChannel2, motorSpeedB); 
+    //analogWrite(enable1Pin, motorSpeedA);
+    //analogWrite(enable2Pin, motorSpeedB);
     moveBack();
   }
   if (direction == UP)
@@ -147,8 +153,10 @@ void moveCar(uint8_t direction, uint8_t speed)
 
     motorSpeedA = speed;
     motorSpeedB = speed;
-    analogWrite(enable1Pin, motorSpeedA);
-    analogWrite(enable2Pin, motorSpeedB);
+    //analogWrite(enable1Pin, motorSpeedA);
+    //analogWrite(enable2Pin, motorSpeedB);
+    ledcWrite(pwmChannel, motorSpeedA);   
+    ledcWrite(pwmChannel2, motorSpeedB); 
     moveForward();
   }
 
@@ -157,8 +165,10 @@ void moveCar(uint8_t direction, uint8_t speed)
     int changex = speed;
     motorSpeedA = motorSpeedA - changex;
     motorSpeedB = motorSpeedB + changex;
-    analogWrite(enable1Pin, motorSpeedA);
-    analogWrite(enable2Pin, motorSpeedB);
+    //analogWrite(enable1Pin, motorSpeedA);
+    //analogWrite(enable2Pin, motorSpeedB);
+    ledcWrite(pwmChannel, motorSpeedA);   
+    ledcWrite(pwmChannel2, motorSpeedB); 
 
     digitalWrite(motor1Pin1, LOW);
     digitalWrite(motor1Pin2, LOW);
@@ -171,8 +181,10 @@ void moveCar(uint8_t direction, uint8_t speed)
     int changex = speed;
     motorSpeedA = motorSpeedA - changex;
     motorSpeedB = motorSpeedB + changex;
-    analogWrite(enable1Pin, motorSpeedA);
-    analogWrite(enable2Pin, motorSpeedB);
+    //analogWrite(enable1Pin, motorSpeedA);
+    //analogWrite(enable2Pin, motorSpeedB);
+    ledcWrite(pwmChannel, motorSpeedA);   
+    ledcWrite(pwmChannel2, motorSpeedB); 
     digitalWrite(motor1Pin1, LOW);
     digitalWrite(motor1Pin2, HIGH);
     digitalWrite(motor2Pin1, LOW);
@@ -199,6 +211,7 @@ void moveCar(uint8_t direction, uint8_t speed)
 
 void moveBack()
 {
+
   digitalWrite(motor1Pin1, HIGH);
   digitalWrite(motor1Pin2, LOW);
   digitalWrite(motor2Pin1, HIGH);
@@ -216,8 +229,9 @@ void moveForward()
 // callback function that will be executed when data is received
 void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
 {
-  Serial.println("HI");
+  //Serial.println("HI");
   memcpy(&info, incomingData, sizeof(WireData));
+  
   Serial.print("Bytes received: ");
   Serial.println(len);
   Serial.print("x: ");
@@ -225,6 +239,7 @@ void OnDataRecv(const uint8_t *mac, const uint8_t *incomingData, int len)
   Serial.print("y: ");
   Serial.println(info.tilt.y);
   Serial.println();
+  
 }
 
 void camCapture(ArduCAM myCAM)
@@ -346,109 +361,8 @@ void serverCapture()
   Serial.println(total_time, DEC);
   Serial.println(F("CAM send Done."));
 }
-/*
-void serverStream(){
-WiFiClient client = server.client();
 
-String response = "HTTP/1.1 200 OK\r\n";
-response += "Content-Type: multipart/x-mixed-replace; boundary=frame\r\n\r\n";
-server.sendContent(response);
-
-while (1){
-start_capture();
-while (!myCAM.get_bit(ARDUCHIP_TRIG, CAP_DONE_MASK));
-size_t len = myCAM.read_fifo_length();
-if (len >= MAX_FIFO_SIZE) //8M
-{
-Serial.println(F("Over size."));
-continue;
-}
-if (len == 0 ) //0 kb
-{
-Serial.println(F("Size is 0."));
-continue;
-}
-myCAM.CS_LOW();
-myCAM.set_fifo_burst();
-if (!client.connected()) break;
-response = "--frame\r\n";
-response += "Content-Type: image/jpeg\r\n\r\n";
-server.sendContent(response);
-while ( len-- )
-{
-temp_last = temp;
-temp =  SPI.transfer(0x00);
-
-//Read JPEG data from FIFO
-if ( (temp == 0xD9) && (temp_last == 0xFF) ) //If find the end ,break while,
-{
-buffer[i++] = temp;  //save the last  0XD9
-//Write the remain bytes in the buffer
-myCAM.CS_HIGH();;
-if (!client.connected()) break;
-client.write(&buffer[0], i);
-is_header = false;
-i = 0;
-}
-if (is_header == true)
-{
-//Write image data to buffer if not full
-if (i < bufferSize)
-buffer[i++] = temp;
-else
-{
-//Write bufferSize bytes image data to file
-myCAM.CS_HIGH();
-if (!client.connected()) break;
-client.write(&buffer[0], bufferSize);
-i = 0;
-buffer[i++] = temp;
-myCAM.CS_LOW();
-myCAM.set_fifo_burst();
-}
-}
-else if ((temp == 0xD8) & (temp_last == 0xFF))
-{
-is_header = true;
-buffer[i++] = temp_last;
-buffer[i++] = temp;
-}
-}
-if (!client.connected()) break;
-}
-}
-
-void handleNotFound(){
-String message = "Server is running!\n\n";
-message += "URI: ";
-message += server.uri();
-message += "\nMethod: ";
-message += (server.method() == HTTP_GET)?"GET":"POST";
-message += "\nArguments: ";
-message += server.args();
-message += "\n";
-server.send(200, "text/plain", message);
-Serial.println(message);
-
-
-
-if (server.hasArg("ql")){
-int ql = server.arg("ql").toInt();
-#if defined (OV2640_MINI_2MP) || defined (OV2640_CAM)
-myCAM.OV2640_set_JPEG_size(ql);
-#elif defined (OV5640_MINI_5MP_PLUS) || defined (OV5640_CAM)
-myCAM.OV5640_set_JPEG_size(ql);
-#elif defined (OV5642_MINI_5MP_PLUS) || defined (OV5642_MINI_5MP_BIT_ROTATION_FIXED) ||(defined (OV5642_CAM))
-myCAM.OV5642_set_JPEG_size(ql);
-#endif
-
-Serial.println("QL change to: " + server.arg("ql"));
-}
-}
-*/
 uint8_t vid, pid;
-// char network[] = "MIT GUEST";
-// char password[] = "";
 
 void logMemory()
 {
@@ -458,19 +372,7 @@ void logMemory()
 void setup()
 {
 
-  // PRINT OUT WIFI NETWORKS NEARBY
-  /*
-  log_d("Total heap: %d", ESP.getHeapSize());
-  log_d("Free heap: %d", ESP.getFreeHeap());
-  log_d("Total PSRAM: %d", ESP.getPsramSize());
-  log_d("Free PSRAM: %d", ESP.getFreePsram());
-
-  logMemory();
-  byte* psdRamBuffer = (byte*)ps_malloc(500000);
-  logMemory();
-  free(psdRamBuffer);
-  logMemory();
-  */
+  
 
   Serial.begin(115200); // for debugging if needed.
 
@@ -482,6 +384,14 @@ void setup()
   pinMode(motor2Pin1, OUTPUT);
   pinMode(motor2Pin2, OUTPUT);
   pinMode(enable2Pin, OUTPUT);
+
+  ledcSetup(pwmChannel, freq, resolution);
+  ledcAttachPin(enable1Pin, pwmChannel);
+
+  ledcSetup(pwmChannel2, freq, resolution);
+  ledcAttachPin(enable2Pin, pwmChannel2);
+
+  
 
   WiFi.mode(WIFI_STA);
 
@@ -531,7 +441,7 @@ void setup()
   Serial.print("Attempting to connect to ");
   Serial.println(network);
   while (WiFi.status() != WL_CONNECTED && count < 12)
-  {
+  { 
     delay(500);
     Serial.print(".");
     count++;
@@ -651,52 +561,7 @@ void setup()
 #endif
 
   myCAM.clear_fifo_flag();
-  /*
-  if (wifiType == 0){
-  if(!strcmp(ssid,"EECS_Labs")){
-  Serial.println(F("Please set your SSID"));
-  while(1);
-  }
-  if(!strcmp(password,"")){
-  Serial.println(F("Please set your PASSWORD"));
-  while(1);
-  }
-  // Connect to WiFi network
-  Serial.println();
-  Serial.println();
-  Serial.print(F("Connecting to "));
-  Serial.println(ssid);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-  delay(500);
-  Serial.print(F("."));
-  }
-  Serial.println(F("WiFi connected"));
-  Serial.println("");
-  Serial.println(WiFi.localIP());
-  }else if (wifiType == 1){
-  Serial.println();
-  Serial.println();
-  Serial.print(F("Share AP: "));
-  Serial.println(AP_ssid);
-  Serial.print(F("The password is: "));
-  Serial.println(AP_password);
-
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(AP_ssid, AP_password);
-  Serial.println("");
-  Serial.println(WiFi.softAPIP());
-  }
-
-  // Start the server
-  server.on("/capture", HTTP_GET, serverCapture);
-  server.on("/stream", HTTP_GET, serverStream);
-  server.onNotFound(handleNotFound);
-  server.begin();
-  Serial.println(F("Server started"));
-  */
+  
 }
 
 void loop()
@@ -707,11 +572,12 @@ void loop()
   while (millis() - primary_timer < 200)
     ;
   primary_timer = millis();
-
+  Serial.println(digitalRead(enable1Pin));
   esp_now_register_recv_cb(OnDataRecv);
-  moveCar(info.direction, info.speed);
-
-  // while (millis() - primary_timer < 20000) {// every 20 seconds take new picture
+  //moveCar(DOWN,1);
+  
+  moveCar(info.direction, info.speed );
+  //while (millis() - primary_timer < 20000) {// every 20 seconds take new picture
   serverCapture();
   //}
   primary_timer = millis();

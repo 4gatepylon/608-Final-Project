@@ -485,8 +485,7 @@ class Crud(object):
 
         #c.execute("""SELECT * FROM loc_data ORDER BY time_ DESC;""") 
         #loc_data = c.fetchall()
-        
-            # for every time 
+        # for every time 
         # NOTE image decoded is already decoded
         #image_decoded = data[1]
         #object_detected = data[2] 

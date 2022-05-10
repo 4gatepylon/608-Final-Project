@@ -141,9 +141,9 @@ void loop()
       }
       sprintf(json_body + offset, "%s", SUFFIX);
       //Serial.println(json_body);
-      int len = strlen(json_body);
-      // Make a HTTP request:
-      Serial.println("SENDING REQUEST");
+      int len = strlen(json_body); 
+      // Make a HTTP request: 
+      Serial.println("SENDING REQUEST"); 
       request[0] = '\0'; //set 0th byte to null
       offset = 0; //reset offset variable for sprintf-ing
       offset += sprintf(request + offset, "POST https://www.googleapis.com/geolocation/v1/geolocate?key=%s  HTTP/1.1\r\n", API_KEY);
@@ -154,10 +154,9 @@ void loop()
       offset += sprintf(request + offset, "%s\r\n", json_body);
       
       do_https_request(SERVER, request, response, OUT_BUFFER_SIZE, RESPONSE_TIMEOUT, false);
-      Serial.println("-----------");
-      Serial.println(response);
-      Serial.println("-----------");
+      Serial.println("-----------"); 
+      Serial.println(response); 
+      Serial.println("-----------"); 
       unpack_json(response);
     } 
-    
 }
